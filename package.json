@@ -1,0 +1,17 @@
+{
+  "name": "sbuhack2026",
+  "private": true,
+  "scripts": {
+    "typecheck": "bun check"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^7"
+  },
+  "dependencies": {
+    "@google/genai": "^2.31.0",
+    "@photon-ai/api": "0.5.0"
+  }
+}
