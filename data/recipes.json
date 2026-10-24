@@ -1,0 +1,181 @@
+[
+  {
+    "id": "r-overnight-oats",
+    "title": "Dorm overnight oats",
+    "description": "Oats soaked in milk overnight with fruit, ready to grab before an 8 a.m. class.",
+    "prepMinutes": 5,
+    "servings": 1,
+    "labels": [
+      "Vegetarian",
+      "Breakfast",
+      "No-cook"
+    ],
+    "ingredients": [
+      "1/2 cup old-fashioned oats",
+      "1/2 cup milk or oat milk",
+      "1/4 cup Greek yogurt",
+      "1 tbsp chia seeds",
+      "1/2 diced apple or a handful of berries",
+      "Pinch of cinnamon"
+    ],
+    "steps": [
+      "Stir oats, milk, yogurt, chia and cinnamon together in a jar.",
+      "Top with fruit, cover and refrigerate overnight.",
+      "Stir and eat cold, or microwave 1 minute."
+    ],
+    "medalUrl": null,
+    "nutrition": null,
+    "order": 0,
+    "source": "NutriPlan team",
+    "createdAt": "2026-10-24T01:30:00Z"
+  },
+  {
+    "id": "r-tofu-rice-bowl",
+    "title": "Gochujang tofu rice bowl",
+    "description": "Crispy pan-fried tofu glazed with gochujang over rice and quick vegetables.",
+    "prepMinutes": 25,
+    "servings": 2,
+    "labels": [
+      "Vegan",
+      "High protein",
+      "Dinner"
+    ],
+    "ingredients": [
+      "1 block extra-firm tofu, pressed and cubed",
+      "2 tbsp gochujang",
+      "1 tbsp soy sauce",
+      "1 tsp maple syrup",
+      "2 cups cooked rice",
+      "1 cup broccoli or mixed vegetables",
+      "Sesame seeds and sliced scallions"
+    ],
+    "steps": [
+      "Pan-fry tofu in a little oil until golden on all sides, about 10 minutes.",
+      "Whisk gochujang, soy sauce, maple syrup and 1 tbsp water; toss with the tofu.",
+      "Steam or microwave the vegetables.",
+      "Serve tofu and vegetables over rice; top with sesame and scallions."
+    ],
+    "medalUrl": null,
+    "nutrition": null,
+    "order": 1,
+    "source": "NutriPlan team",
+    "createdAt": "2026-10-24T01:30:00Z"
+  },
+  {
+    "id": "r-black-bean-quesadilla",
+    "title": "Black bean and corn quesadilla",
+    "description": "A five-ingredient quesadilla that works in a pan or a sandwich press.",
+    "prepMinutes": 12,
+    "servings": 1,
+    "labels": [
+      "Vegetarian",
+      "Lunch"
+    ],
+    "ingredients": [
+      "1 large flour tortilla",
+      "1/3 cup black beans, rinsed",
+      "1/4 cup corn",
+      "1/3 cup shredded cheddar",
+      "2 tbsp salsa"
+    ],
+    "steps": [
+      "Mash half the beans with a fork and spread on half the tortilla.",
+      "Add the rest of the beans, corn and cheese; fold.",
+      "Cook in a dry pan 2\u20133 minutes per side until crisp and melted.",
+      "Cut and serve with salsa."
+    ],
+    "medalUrl": null,
+    "nutrition": null,
+    "order": 2,
+    "source": "NutriPlan team",
+    "createdAt": "2026-10-24T01:30:00Z"
+  },
+  {
+    "id": "r-chickpea-salad",
+    "title": "Lemon chickpea salad",
+    "description": "A no-cook salad that keeps in the fridge for three days.",
+    "prepMinutes": 10,
+    "servings": 2,
+    "labels": [
+      "Vegan",
+      "No-cook",
+      "Lunch"
+    ],
+    "ingredients": [
+      "1 can chickpeas, rinsed",
+      "1 cucumber, diced",
+      "1 cup grape tomatoes, halved",
+      "1/4 red onion, finely diced",
+      "Juice of 1 lemon",
+      "2 tbsp olive oil",
+      "Salt, pepper and parsley"
+    ],
+    "steps": [
+      "Combine chickpeas and vegetables in a bowl.",
+      "Whisk lemon juice, olive oil, salt and pepper; pour over.",
+      "Toss with parsley and chill 10 minutes before eating."
+    ],
+    "medalUrl": null,
+    "nutrition": null,
+    "order": 3,
+    "source": "NutriPlan team",
+    "createdAt": "2026-10-24T01:30:00Z"
+  },
+  {
+    "id": "r-egg-fried-rice",
+    "title": "Leftover egg fried rice",
+    "description": "Turns yesterday's rice into dinner in one pan.",
+    "prepMinutes": 15,
+    "servings": 2,
+    "labels": [
+      "Vegetarian",
+      "Dinner",
+      "Budget"
+    ],
+    "ingredients": [
+      "2 cups cold cooked rice",
+      "2 eggs",
+      "1 cup frozen peas and carrots",
+      "2 scallions, sliced",
+      "2 tbsp soy sauce",
+      "1 tsp sesame oil"
+    ],
+    "steps": [
+      "Scramble the eggs in an oiled pan and set aside.",
+      "Stir-fry the vegetables 2 minutes, then add the rice and break up clumps.",
+      "Add soy sauce and sesame oil; fold in the eggs and scallions."
+    ],
+    "medalUrl": null,
+    "nutrition": null,
+    "order": 4,
+    "source": "NutriPlan team",
+    "createdAt": "2026-10-24T01:30:00Z"
+  },
+  {
+    "id": "r-yogurt-parfait",
+    "title": "Greek yogurt parfait",
+    "description": "Layered yogurt, granola and fruit, built from the dining hall yogurt bar or your fridge.",
+    "prepMinutes": 3,
+    "servings": 1,
+    "labels": [
+      "Vegetarian",
+      "Breakfast",
+      "No-cook"
+    ],
+    "ingredients": [
+      "3/4 cup plain Greek yogurt",
+      "1/4 cup granola",
+      "1/2 cup fruit",
+      "1 tsp honey"
+    ],
+    "steps": [
+      "Layer half the yogurt, fruit and granola in a cup.",
+      "Repeat, then drizzle with honey."
+    ],
+    "medalUrl": null,
+    "nutrition": null,
+    "order": 5,
+    "source": "NutriPlan team",
+    "createdAt": "2026-10-24T01:30:00Z"
+  }
+]
