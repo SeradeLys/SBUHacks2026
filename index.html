@@ -1432,29 +1432,29 @@ Rules:
 - If a menu is "not loaded", tell them to import it on the Dining menus page.
 CONTEXT:
 ${this.context()}`; },
+    // Wolfie Butler chat -> your iMessage agent (same brain, tools and data as iMessage).
+  // Put your tunnel address here, no slash at the end.
+  agentUrl: "http://localhost:8787",
   async send(text){
-    const sample = await (window.claude?.use ? window.claude.use("sample").catch(()=>null) : null);
     S.chat.push({ role:"user", content:text }); S.chatBusy = true; paintMsgs(); paintComposer();
-    if (!sample) { S.chat.push({ role:"assistant", content:"The agent isn't available in this view. Open Wolfie Butler in Claude while signed in to chat. You can still copy the agent brief for your Photon iMessage agent." }); S.chatBusy = false; paintMsgs(); paintComposer(); return; }
-    const turns = S.chat.filter(m => !m.local).slice(-12).map(m => ({ role:m.role, content:m.content }));
-    const bot = { role:"assistant", content:"", streaming:true, acts:[] }; let pushed = false;
+    let sid = null; try { sid = localStorage.getItem("wb.chatSession"); if (!sid) { sid = crypto.randomUUID(); localStorage.setItem("wb.chatSession", sid); } } catch { sid = "web"; }
+    const t = targets(), n = NutritionService.calculateMealNutrition(S.plan.items);
+    const page = JSON.stringify({
+      selected:{ hall:CONFIG.halls[S.hall].name, date:S.date },
+      profile: S.profile ? { goal:S.profile.goal||null, diet:S.profile.diet, allergies:S.profile.allergies, activity:S.profile.activity||null } : null,
+      dailyTargets:{ kcal:t.cal, protein_g:t.protein, carbs_g:t.carbs, fat_g:t.fat, fiber_g:t.fiber },
+      mealPlan:{ items:S.plan.items.map(i => ({ name:i.name, period:i.period, servings:i.servings, hall:i.hall, date:i.date })), totals:n.totals }
+    });
     this.ctl = new AbortController();
-    const tools = [{ name:"add_to_meal", description:"Add a dish from the selected date's menu to the student's meal plan. Returns the updated plan item count.",
-      inputSchema:{ type:"object", properties:{ hallId:{ type:"string", enum:["west","east"] }, dishId:{ type:"string" }, servings:{ type:"integer", minimum:1 }, period:{ type:"string", enum:["Breakfast","Lunch","Dinner"] } }, required:["hallId","dishId"] },
-      execute:(inp) => { const hall = String(inp.hallId), m = S.menus[menuKey(hall, S.date)]; if (!m) throw new Error("That hall's menu isn't loaded.");
-        const f = m.items.find(i => i.id === String(inp.dishId)); if (!f) throw new Error("No dish with that id on this menu.");
-        const per = PERIODS.includes(String(inp.period)) ? String(inp.period) : defaultPeriod(f.station);
-        MealPlanService.add(S.plan, f, hall, S.date, Math.max(1, parseInt(inp.servings)||1), per); persistPlan(); if (S.view === "planner") render(); bot.acts.push(`Added ${f.name} to your plan`); return { ok:true, planItems:S.plan.items.length }; } }];
-    let canTools = false; try { canTools = !!(await sample.limits())?.tools; } catch {}
     try {
-      const { text } = await sample([{ role:"user", content:this.rules() }, ...turns], { cache:false, modelTier:"quick", signal:this.ctl.signal, ...(canTools?{tools}:{}),
-        onText:({ text }) => { wbTouch(); bot.content = text; if (!pushed) { S.chat.push(bot); pushed = true; } paintMsgs(); } });
-      bot.content = text; if (!pushed) S.chat.push(bot); speak(text);
+      const res = await fetch(this.agentUrl + "/chat", { method:"POST", headers:{ "content-type":"application/json" }, body:JSON.stringify({ text, sessionId:sid, page }), signal:this.ctl.signal });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.reply) throw new Error(data.error || "The agent didn't answer.");
+      S.chat.push({ role:"assistant", content:data.reply, acts:[] }); speak(data.reply);
     } catch(e) {
-      const msg = { not_granted:"The agent needs your permission to use Claude. Send another message and choose Allow to chat.", rate_limited:"Too many messages at once. Wait a moment, then try again.", session_expired:"Please sign in again to keep chatting.", refused:"I can't help with that one. Try asking about the menus or your meal." }[e?.code] || "Something interrupted the reply. Send your message again.";
-      if (pushed) { bot.content = (e?.code === "refused" ? "" : (e.text || "")) + (e?.code === "cancelled" ? "" : "\n\n" + msg); } else if (e?.code !== "cancelled") S.chat.push({ role:"assistant", content:msg, local:true });
+      if (e?.name !== "AbortError") S.chat.push({ role:"assistant", local:true, content: e?.message && !/fetch/i.test(e.message) ? e.message : "I can't reach the agent right now. Make sure it's running on the Mac, then try again." });
     }
-    bot.streaming = false; S.chatBusy = false; paintMsgs(); paintComposer(); paintNavCounts();
+    S.chatBusy = false; paintMsgs(); paintComposer(); paintNavCounts();
   }
 };
 function paintComposer(){ wbTouch(); const b = document.querySelector('[data-form="chat"] button[type="submit"]'); if (b) b.disabled = S.chatBusy; const pr = document.querySelector(".prompts"); if (pr && S.chat.length) pr.remove(); }
@@ -1525,7 +1525,7 @@ document.addEventListener("click", async e => {
     case "add-rec": { const r = S.recs?.recs[+a.dataset.ix]; if (!r) break; r.items.forEach(f => MealPlanService.add(S.plan, f, S.hall, S.date, 1)); persistPlan(); render(); paintNavCounts(); toast(`Added ${r.items.length} dishes · ${planCount()} selected`); break; }
     case "rcat": { const c = a.dataset.cat; if (c === "All") S.recipeCats = []; else { const set = new Set(S.recipeCats); set.has(c) ? set.delete(c) : set.add(c); S.recipeCats = [...set]; } render(); break; }
     case "recipe": S.recipeOpen = a.dataset.id; render(); window.scrollTo({top:0}); break;
-    case "recipe-back": S.recipeOpen = null; render(); break;
+    case "recipe-back": S.recipeOpen = null; render(); break; 
     case "new-recipe": recipeModal(); break;
     case "prompt": AgentService.send(a.dataset.p); break;
     case "copy-brief": { const t = PhotonBridge.brief(); try { await navigator.clipboard.writeText(t); toast("Agent brief copied"); } catch { const pre = document.getElementById("brief-pre"); pre.closest("details").open = true; const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Selected. Press Ctrl+C or ⌘C to copy"); } break; }
