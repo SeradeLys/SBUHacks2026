@@ -753,7 +753,8 @@ const MedalProvider = {
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 function fmt(v, d=0){ if (!NutritionService.isNum(v)) return "N/A"; const r = Math.round(Number(v)*Math.pow(10,d))/Math.pow(10,d); return r.toLocaleString("en-US",{maximumFractionDigits:d}); }
 const range = r => (r && NutritionService.isNum(r.min) && NutritionService.isNum(r.max)) ? (r.min === r.max ? fmt(r.min) : `${fmt(r.min)}–${fmt(r.max)}`) : "N/A";
-const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+const DEMO_DATE = "2026-10-23"; // TEMP hackathon demo: menu data only exists for this date
+const todayISO = () => DEMO_DATE;
 const niceDate = (iso, opt={weekday:"short",month:"short",day:"numeric"}) => { if (!iso) return ""; const [y,m,d] = iso.split("-").map(Number); return new Date(y,m-1,d).toLocaleDateString("en-US",opt); };
 const hueOf = s => { let h = 0; for (const c of String(s)) h = (h*31 + c.charCodeAt(0)) % 360; return h; };
 const initials = s => String(s).replace(/[^A-Za-z ]/g,"").split(" ").filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase() || "NP";
