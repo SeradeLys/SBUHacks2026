@@ -36,3 +36,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 nutrition-data.json
 chat-history.json
 web-sync-code.txt
+
+# per-student saved profiles and iMessage links (personal data)
+user-data/

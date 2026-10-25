@@ -1,11 +1,19 @@
 import { createServer } from "node:http";
 import { setTimeout as sleep } from "node:timers/promises";
 import { TOOLS, runTool, systemPrompt } from "./meal-tools";
+import { handleImessage, imessageLine, noteLine } from "./channel";
+import { normalizePhone } from "./accounts";
+import { demoConfig } from "./demo";
+import { oneAtATime } from "./queue";
+import { createApi } from "./web-api";
 import { ApiError, Photon } from "@photon-ai/api";
 import { GoogleGenAI, Type, type Content, type FunctionDeclaration, type Part } from "@google/genai";
 import { Spectrum } from "spectrum-ts";
 import { imessage } from "spectrum-ts/providers/imessage";
 
+
+// Messages and tool arguments are personal (weight, allergies...), so they are only printed when LOG_MESSAGES=on.
+const logText = ["on", "true", "1", "yes"].includes((process.env.LOG_MESSAGES ?? "").trim().toLowerCase()) ? (l: string) => console.log(l) : undefined;
 
 // ---------- Settings ----------
 type Config = {
@@ -89,7 +97,8 @@ async function think(ai: GoogleGenAI, model: string, past: Content[], userText: 
       const name = call.name ?? "";
       const args = (call.args ?? {}) as Record<string, unknown>;
       const result = await runTool(name, args);
-      console.log(`   🔧 ${name}(${JSON.stringify(args)}) → ${result.slice(0, 80)}`);
+      console.log(`   🔧 ${name}`);
+      logText?.(`      ${JSON.stringify(args)} → ${result.slice(0, 80)}`);
       parts.push({ functionResponse: { id: call.id, name, response: { result } } });
     }
     turn.push({ role: "user", parts });
@@ -155,82 +164,14 @@ async function greetFirst(photon: Photon, c: Config, memory: Map<string, Content
 // ---------- Web chat for Wolfie Butler (set WEB_CHAT=off in .env to disable) ----------
 // Wolfie Butler's chat box sends { text, sessionId, page } to http://localhost:8787/chat and shows { reply }.
 // It is the same brain, tools and nutrition-data.json as iMessage. A tunnel gives it a public https address.
-const WEB_MAX_PER_MINUTE = 20; // all web visitors together, protects your Gemini quota
-const WEB_MAX_SESSIONS = 200;  // remembered web conversations
-
-// iMessage and the website share one data file, so the agent answers one message at a time.
-let line: Promise<unknown> = Promise.resolve();
-function oneAtATime<T>(job: () => Promise<T>): Promise<T> {
-  const next = line.then(job, job);
-  line = next.catch(() => undefined);
-  return next;
-}
-
 function startWebChat(ask: (past: Content[], text: string) => Promise<string>) {
   if (["off", "false", "0", "no"].includes((process.env.WEB_CHAT ?? "").trim().toLowerCase())) return;
   const port = Number(process.env.WEB_CHAT_PORT) || 8787;
   const origins = (process.env.WEB_CHAT_ORIGINS || "https://sbuhacks26.vercel.app")
     .split(",").map((s) => s.trim().replace(/\/+$/, "")).filter(Boolean);
   const allowed = (o: string) => origins.includes(o) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o);
-  const sessions = new Map<string, Content[]>();
-  let recent: number[] = [];
-
-  const server = createServer(async (req, res) => {
-    const origin = String(req.headers.origin ?? "");
-    const send = (status: number, body?: object) => {
-      const cors = allowed(origin)
-        ? { "access-control-allow-origin": origin, "access-control-allow-methods": "POST, OPTIONS", "access-control-allow-headers": "content-type", "access-control-max-age": "86400" }
-        : {};
-      res.writeHead(status, { "content-type": "application/json", vary: "Origin", ...cors });
-      res.end(body ? JSON.stringify(body) : undefined);
-    };
-    if (req.url !== "/chat") return send(404, { error: "Not found." });
-    // Opening the link in a browser tab sends no website address: show a status note instead of an error.
-    if (!origin && req.method === "GET") return send(200, { ok: true, note: "The agent is running. Chat with it from the Wolfie Butler site." });
-    // No website address means it isn't a browser page (a server, an app or a test tool). Those can fake
-    // any address anyway, so only browser pages are checked; the per-minute cap still applies to everyone.
-    if (origin && !allowed(origin)) {
-      console.log(`🚫 Blocked web chat from ${origin}. To allow it, add it to WEB_CHAT_ORIGINS in .env.`);
-      return send(403, { error: `This website (${origin}) isn't allowed to use the agent. Add ${origin} to WEB_CHAT_ORIGINS in the agent's .env, then restart the agent.` });
-    }
-    if (req.method === "OPTIONS") return send(204);
-    if (req.method !== "POST") return send(405, { error: "Use POST." });
-
-    const now = Date.now();
-    recent = recent.filter((t) => now - t < 60_000);
-    if (recent.length >= WEB_MAX_PER_MINUTE) return send(429, { error: "Too many messages right now. Wait a minute and try again." });
-    recent.push(now);
-
-    let raw = "";
-    for await (const chunk of req) {
-      raw += chunk;
-      if (raw.length > 20_000) return send(413, { error: "That message is too long." });
-    }
-    let body: Record<string, unknown> = {};
-    try { body = obj(JSON.parse(raw)); } catch { /* handled below */ }
-    const text = str(body.text).trim().slice(0, 2_000);
-    const sessionId = str(body.sessionId).slice(0, 64) || "web";
-    const page = str(body.page).slice(0, 6_000);
-    if (!text) return send(400, { error: "The message is empty." });
-
-    console.log(`\n🌐 ${text}`);
-    const past = sessions.get(sessionId) ?? [];
-    // What the student sees on the page (profile, plan) goes with this message only, not into memory.
-    const prompt = page ? `${text}\n\n[What the student sees on the Wolfie Butler website right now: ${page}]` : text;
-    let reply: string;
-    try {
-      reply = await ask(past, prompt);
-    } catch (e) {
-      console.error("Gemini error:", e instanceof Error ? e.message : e);
-      return send(502, { error: "Sorry, my brain glitched for a second. Try again in a moment?" });
-    }
-    past.push({ role: "user", parts: [{ text }] }, { role: "model", parts: [{ text: reply }] });
-    sessions.delete(sessionId);
-    sessions.set(sessionId, past.slice(-MAX_HISTORY));
-    if (sessions.size > WEB_MAX_SESSIONS) sessions.delete(sessions.keys().next().value!);
-    console.log(`🤖 ${reply}`);
-    send(200, { reply });
-  });
+  const api = createApi({ ask, allowed, maxHistory: MAX_HISTORY, logText });
+  const server = createServer((req, res) => { api(req, res).catch((e) => { console.error("Web API error:", e instanceof Error ? e.message : e); if (!res.headersSent) res.writeHead(500); res.end(); }); });
   server.on("error", (e) => console.error(`🌐 Web chat couldn't start on port ${port}:`, e.message));
   server.listen(port, () => console.log(`🌐 Web chat for Wolfie Butler: http://localhost:${port}/chat (allowed: ${origins.join(", ")})`));
 }
@@ -238,34 +179,61 @@ function startWebChat(ask: (past: Content[], text: string) => Promise<string>) {
 // ---------- iMessage through Spectrum (needs only SPECTRUM_PROJECT_ID and SPECTRUM_PROJECT_SECRET) ----------
 const spectrumReady = () => Boolean(process.env.SPECTRUM_PROJECT_ID && process.env.SPECTRUM_PROJECT_SECRET);
 
+// Stage 1 of the inbound path: Spectrum reports a heartbeat each time a live subscription is open, so this proves the agent is
+// really listening for texts (not only that it logged in). Printed once per stream; the line is "shared" or the last 4 digits.
+const liveStreams = new Set<string>();
+function logStreamLive(h: { stream: string; phone: string; lineId: string }) {
+  const key = `${h.stream}:${h.lineId}`;
+  if (liveStreams.has(key)) return;
+  liveStreams.add(key);
+  console.log(`📡 iMessage "${h.stream}" stream is live on ${h.phone === "shared" ? "the SHARED line pool" : `a dedicated line ending ${h.phone.slice(-4)}`}.`);
+}
+
 async function startSpectrum(ask: (past: Content[], text: string) => Promise<string>) {
   const app = await Spectrum({
     projectId: process.env.SPECTRUM_PROJECT_ID!,
     projectSecret: process.env.SPECTRUM_PROJECT_SECRET!,
-    providers: [imessage.config()],
+    providers: [imessage.config({ onHeartbeat: logStreamLive })],
   });
+  imessageLine.active = true; // from here on the website may hand out link codes: a text with the code can reach handleImessage
   console.log(`📱 Spectrum connected to "${app.config?.name ?? "your project"}". Text the project's iMessage line to chat.`);
-  const memory = new Map<string, Content[]>(); // one history per conversation
+  const demo = demoConfig();
+  if (demo.on) console.log(demo.ready ? `🧪 Demo mode: only the tester (${demo.handle.includes("@") ? "an email handle" : "number ending " + demo.handle.slice(-4)}) is answered, using website profile ${demo.userId}. Self-service linking is off.` : `🧪 Demo mode is ON but not set up: ${demo.problem} Every iMessage will be refused until it is fixed.`);
+  else if (!imessageLine.phone) console.log("ℹ️ Set IMESSAGE_LINE in .env to the project's iMessage number (like +15551234567). Until then the website can't tell students where to text their link code.");
+  const memory = new Map<string, Content[]>(); // one history per student
+  console.log(`ℹ️ iMessage setup: IMESSAGE_LINE ${imessageLine.phone ? "is set" : "is NOT set"}. If no "📡 … stream is live" line appears within a few seconds, Spectrum isn't delivering texts to this agent.`);
 
+  try { await listen(app, ask, memory); }
+  catch (e) { console.error("📱 The iMessage stream stopped:", e instanceof Error ? e.message : e); }
+  console.error("📱 iMessage is no longer being listened to. Restart the agent.");
+}
+
+async function listen(app: Awaited<ReturnType<typeof Spectrum>>, ask: (past: Content[], text: string) => Promise<string>, memory: Map<string, Content[]>) {
   for await (const [space, message] of app.messages) {
-    if (message.content.type !== "text") continue;
+    if (message.content.type !== "text") { console.log(`📱 iMessage ignored: content type is "${message.content.type}", not plain text.`); continue; }
     const text = message.content.text.trim();
     if (!text) continue;
-    console.log(`\n💬 ${text}`);
+    noteLine((space as { phone?: string }).phone);
+    console.log(`📱 iMessage received (${text.length} chars, ${(space as { type?: string }).type ?? "unknown"} chat, sender is ${normalizePhone(message.sender?.id) ? "a phone number" : (message.sender?.id ?? "").includes("@") ? "an email address" : "an unrecognised handle"})`);
+    logText?.(`💬 ${text}`);
+    logText?.(`📱 sender handle (copy this into the Photon Users list and DEMO_TESTER_HANDLE): ${message.sender?.id ?? ""}`);
 
-    const past = memory.get(space.id) ?? [];
-    let reply: string;
+    let reply: string | undefined;
     try {
-      reply = await ask(past, text);
+      reply = await handleImessage(message.sender?.id ?? "", (space as { type?: string }).type, text, ask, memory, MAX_HISTORY);
     } catch (e) {
       console.error("Gemini error:", e instanceof Error ? e.message : e);
       reply = "Sorry, my brain glitched for a second. Try again in a moment?";
     }
-    past.push({ role: "user", parts: [{ text }] }, { role: "model", parts: [{ text: reply }] });
-    memory.set(space.id, past.slice(-MAX_HISTORY));
-
-    await space.responding(async () => { await message.reply(reply); });
-    console.log(`🤖 ${reply}`);
+    if (!reply) { console.log("📱 No reply to send (nothing to answer)."); continue; }
+    const out = reply;
+    try {
+      await space.responding(async () => { await message.reply(out); });
+      console.log(`✉️ iMessage reply sent (${out.length} chars)`);
+    } catch (e) { // a failed send must not stop the agent from hearing the next text
+      console.error("✉️ Couldn't send the iMessage reply:", e instanceof Error ? `${e.name}: ${e.message}` : e);
+    }
+    logText?.(`🤖 ${out}`);
   }
 }
 
@@ -279,8 +247,8 @@ async function run(c: Config, pollMs = 2_000) {
   const memory = new Map<string, Content[]>(); // one history per conversation
 
   console.log(spectrumReady() ? `Ready. Website chat and iMessage (Spectrum), with ${c.model}. Ctrl+C to stop.` : c.webOnly ? `Ready. Website chat only, with ${c.model}. Ctrl+C to stop.` : `Ready. Agent is live with ${c.model}. Text ${c.agent} from ${c.sender}. Ctrl+C to stop.`);
-  startWebChat((past, text) => oneAtATime(() => think(ai, c.model, past, text)));
-  if (spectrumReady()) return startSpectrum((past, text) => oneAtATime(() => think(ai, c.model, past, text)));
+  startWebChat((past, text) => think(ai, c.model, past, text));
+  if (spectrumReady()) return startSpectrum((past, text) => think(ai, c.model, past, text));
   if (c.webOnly) return; // the web chat server keeps the process running
   await greetFirst(photon, c, memory, (prompt) => oneAtATime(() => think(ai, c.model, [], prompt)));
 
@@ -305,7 +273,7 @@ async function run(c: Config, pollMs = 2_000) {
 
           const msg = incoming(m, c);
           if (!msg) continue;
-          console.log(`\n💬 ${msg.text}`);
+          logText?.(`💬 ${msg.text}`);
 
           const past = memory.get(msg.spaceId) ?? [];
           let reply: string;
@@ -327,7 +295,7 @@ async function run(c: Config, pollMs = 2_000) {
               content: { type: "text", format: "plain", text: reply },
             },
           });
-          console.log(`🤖 ${reply}`);
+          logText?.(`🤖 ${reply}`);
         }
         pageToken = page.nextPageToken;
       } while (pageToken);

@@ -1,6 +1,7 @@
 // meal-tools.ts — Stony Brook dining (Nutrislice) + personal nutrition tracking tools for the Gemini agent.
 // All math lives in nutrition-service.ts; this file fetches menus, stores logs and talks to Gemini.
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
+import { currentUser, userFile, writeJson } from "./accounts";
 import { Type, type FunctionDeclaration } from "@google/genai";
 import {
   ACTIVITY_LEVELS, DISCLAIMER, NUTRIENTS, WARNING, averageDays, calculateTargets, completeValue, describeTargets, fitScore, fmt,
@@ -27,7 +28,7 @@ type Profile = BodyInput & {
   name?: string; diet?: string; allergies?: string; dislikes?: string; preferred_hall?: string;
   setup_done?: boolean; // true once the agent has asked all its first-time questions
 };
-type Data = { profile: Profile; log: Record<string, LogEntry[]> };
+type Data = { profile: Profile; log: Record<string, LogEntry[]>; updatedAt?: string }; // updatedAt: when the profile last changed
 
 const PROFILE_KEYS = [
   "name", "weight", "weight_unit", "height", "height_unit", "age", "sex", "activity_level",
@@ -43,15 +44,60 @@ const given = (v: unknown) => v !== undefined && v !== null && v !== "";
 const dateArg = (v: unknown) => (/^\d{4}-\d{2}-\d{2}$/.test(str(v)) ? str(v) : today());
 const hallArg = (v: unknown): Hall[] => (str(v) === "east" || str(v) === "west" ? [str(v) as Hall] : ["east", "west"]);
 
-async function loadData(): Promise<Data> {
+// Each student has their own file (see accounts.ts). Without a user in scope the old single shared file is used.
+const dataFile = () => { const id = currentUser(); return id ? userFile(id) : DATA_FILE; };
+
+export async function loadData(): Promise<Data> {
   try {
-    const d = JSON.parse(await readFile(DATA_FILE, "utf8")) as Partial<Data>;
-    return { profile: d.profile ?? {}, log: d.log ?? {} };
+    const d = JSON.parse(await readFile(dataFile(), "utf8")) as Partial<Data>;
+    return { profile: d.profile ?? {}, log: d.log ?? {}, updatedAt: d.updatedAt };
   } catch {
     return { profile: {}, log: {} };
   }
 }
-const saveData = (d: Data) => writeFile(DATA_FILE, JSON.stringify(d, null, 2));
+export const saveData = (d: Data) => writeJson(dataFile(), d);
+
+/** Copies the website profile into the saved one, so the chat uses the same numbers as the dashboard.
+ *  Website values win. A blank website field keeps whatever the agent already has.
+ *  `stamp` is when the student last edited the profile on the website. */
+export async function syncProfile(web: Record<string, unknown>, stamp?: string): Promise<void> {
+  const data = await loadData(), p = data.profile as Record<string, unknown>, before = JSON.stringify(p), beforeStamp = data.updatedAt;
+  const num = (v: unknown) => { const x = typeof v === "number" ? v : parseFloat(str(v)); return Number.isFinite(x) && x > 0 ? x : undefined; };
+  const list = (v: unknown) => (Array.isArray(v) ? v.map(str).filter(Boolean).join(", ") : str(v));
+  const set = (k: string, v: unknown) => { if (v !== undefined && v !== "") p[k] = v; };
+
+  set("name", str(web.name));
+  if (num(web.weight)) { p.weight = num(web.weight); p.weight_unit = web.weightUnit === "kg" ? "kg" : "lbs"; }
+  if (num(web.height)) { p.height = num(web.height); p.height_unit = web.heightUnit === "cm" ? "cm" : "in"; }
+  set("age", num(web.age)); set("sex", str(web.sex)); set("activity_level", str(web.activity));
+
+  const webBody = { weight: num(web.weight), weight_unit: web.weightUnit === "kg" ? "kg" : "lbs", height: num(web.height), height_unit: web.heightUnit === "cm" ? "cm" : "in", age: num(web.age), sex: str(web.sex), activity_level: str(web.activity) };
+  if (calculateTargets(webBody).missing.length === 0) {
+    // The website profile is complete: it is the whole truth, so no chat setup is needed.
+    p.diet = list(web.diet) || "none"; p.allergies = list(web.allergies) || "none"; p.setup_done = true;
+    if (num(web.targetWeight) && num(web.timeframeWeeks)) { p.target_weight = num(web.targetWeight); p.timeframe_weeks = num(web.timeframeWeeks); }
+    else { delete p.target_weight; delete p.timeframe_weeks; }
+  } else {
+    set("diet", list(web.diet)); set("allergies", list(web.allergies));
+  }
+  const changed = JSON.stringify(p) !== before;
+  if (stamp) data.updatedAt = stamp; else if (changed) data.updatedAt = new Date().toISOString();
+  if (changed || data.updatedAt !== beforeStamp) await saveData(data);
+}
+
+/** The saved profile in the website's field names and units, so the page can mirror it exactly. */
+export function toWebProfile(p: Record<string, unknown>): Record<string, unknown> {
+  const words = (v: unknown) => str(v).split(/,|;|\band\b|\//i).map((x) => x.trim()).filter((x) => x && x.toLowerCase() !== "none");
+  const known = (v: unknown) => (v === undefined || v === null || v === "" ? null : v); // null = "the agent doesn't know", not "empty"
+  const done = !!p.setup_done; // once setup is done, a missing target weight means "no goal", which is a real answer
+  return {
+    name: known(str(p.name)), age: known(p.age), sex: known(str(p.sex)), activity: known(str(p.activity_level)),
+    weight: known(p.weight), weightUnit: known(p.weight) ? (p.weight_unit === "kg" ? "kg" : "lb") : null,
+    height: known(p.height), heightUnit: known(p.height) ? (p.height_unit === "cm" ? "cm" : "in") : null,
+    targetWeight: known(p.target_weight) ?? (done ? "" : null), timeframeWeeks: known(p.timeframe_weeks) ?? (done ? "" : null),
+    diet: known(p.diet) === null ? null : words(p.diet), allergies: known(p.allergies) === null ? null : words(p.allergies),
+  };
+}
 
 // ---------- Nutrislice ----------
 const cache = new Map<string, { at: number; foods: Food[] }>();
@@ -182,6 +228,7 @@ Today's balance across every macro:
 ${balanceText(sumNutrients(data.log[t] ?? []), targets)}
 
 Rules:
+- The student's profile is shared with their Wolfie Butler website profile, so a change you save here shows up there too. When they change something that is already saved (weight, height, age, sex, activity, diet or allergies), say what you will change and save it with update_profile. If the new value looks implausible, or a body number jumps by more than about 15%, do NOT save yet: ask "Just to confirm, ...?" and wait for a yes.
 - ${MACRO_REPLY_RULE}
 - Recommend meals only from real menus fetched with get_menu (East Side and West Side Dine-In). Never invent dishes or nutrition numbers.
 - Care about every macro, not just calories and protein: protein, carbs, fat and fiber all count equally. Use the balance above.
@@ -384,10 +431,11 @@ export async function runTool(name: string, args: Record<string, unknown>): Prom
       }
 
       case "update_profile": {
-        const p = data.profile as Record<string, unknown>;
+        const p = data.profile as Record<string, unknown>, before = JSON.stringify(p);
         if (args.clear_goal === true) { delete p.target_weight; delete p.timeframe_weeks; }
         for (const k of PROFILE_KEYS) if (given(args[k])) p[k] = args[k];
         if (args.setup_done === true) p.setup_done = true;
+        if (JSON.stringify(p) !== before) data.updatedAt = new Date().toISOString(); // lets the website notice this change
         await saveData(data);
         const s = setupStatus(data.profile);
         const next = !s.done ? `Setup not finished. Ask next: ${s.next}`

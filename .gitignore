@@ -15,3 +15,6 @@ out
 .idea
 .DS_Store
 Thumbs.db
+
+# per-student data kept by the agent
+user-data/

@@ -30,7 +30,7 @@
   --f-display:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-body:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   /* shape */
-  --r-sm:10px; --r:16px; --r-lg:24px; --r-xl:32px; --rail:248px;
+  --r-sm:10px; --r:16px; --r-lg:24px; --r-xl:32px; --rail:76px; --rail-x:248px;
   /* motion */
   --t-fast:120ms; --t:200ms; --t-slow:320ms; --ease:cubic-bezier(.2,.7,.2,1);
   color-scheme:light;
@@ -49,14 +49,24 @@ button,input,select,textarea{font:inherit;color:inherit}
 
 /* shell */
 .app{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);min-height:100vh}
-.rail{position:sticky;top:0;height:100vh;padding:20px 14px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:22px;background:var(--surface)}
-.brand{display:flex;align-items:center;gap:10px;padding:4px 8px}
-.logo{width:34px;height:34px;border-radius:10px;background:var(--brand);display:grid;place-items:center;flex:none}
-.logo svg{width:20px;height:20px}
+.rail{position:sticky;top:0;height:100vh;padding:20px 14px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:22px;background:var(--surface);width:var(--rail);justify-self:start;z-index:40;overflow:hidden;white-space:nowrap;transition:width .24s var(--ease),box-shadow .24s var(--ease)}
+/* Collapsed to an icon rail by default; .open (hover, focus, or a short grace period) widens it over the content. */
+.rail.open{width:var(--rail-x);box-shadow:var(--e-3)}
+.rail :is(.eyebrow,.lbl-t,.brand b,.count,.cloud span){transition:opacity .18s var(--ease)}
+.rail:not(.open) :is(.eyebrow,.lbl-t,.brand b,.count,.cloud span){opacity:0}
+.rail .cloud{transition:padding .24s var(--ease)}
+.rail:not(.open) .cloud{padding-inline:20px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 7px}
+.logo{width:34px;height:34px;border-radius:10px;background:var(--brand-tint);display:grid;place-items:center;flex:none;overflow:hidden}
+.logo img{width:100%;height:100%;object-fit:cover}
+.link-box{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:12px;background:var(--surface-2)}
+.link-code{font-family:var(--f-display);font-size:30px;font-weight:800;letter-spacing:.18em;color:var(--brand-text)}
+/* the mascot PNG has transparent margins, so it is enlarged slightly inside circular and rounded frames */
+img.mascot{transform:scale(1.3);transform-origin:50% 53%}
 .brand b{font-family:var(--f-display);font-size:18px;white-space:nowrap;font-weight:800;letter-spacing:-.02em}
 .nav{display:flex;flex-direction:column;gap:2px}
 .nav .eyebrow{padding:0 10px 6px}
-.nav a{position:relative;display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--r-sm);text-decoration:none;color:var(--fg);font-weight:500;min-height:42px;transition:background var(--t-fast) var(--ease),color var(--t-fast) var(--ease)}
+.nav a{position:relative;display:flex;align-items:center;gap:11px;padding:10px 14.5px;border-radius:var(--r-sm);text-decoration:none;color:var(--fg);font-weight:500;min-height:42px;transition:background var(--t-fast) var(--ease),color var(--t-fast) var(--ease)}
 .nav a svg{width:19px;height:19px;color:var(--muted);flex:none}
 .nav a:hover{background:var(--surface-2)}
 .nav a[aria-current="page"]{background:var(--brand-tint);font-weight:700;color:var(--brand-text)}
@@ -206,14 +216,6 @@ textarea.input{min-height:120px;resize:vertical;font-size:13px;font-family:ui-mo
 .rcard{transition:box-shadow var(--t) var(--ease),transform var(--t) var(--ease),border-color var(--t) var(--ease)}
 .rcard:hover{box-shadow:var(--e-2);transform:translateY(-2px);border-color:var(--line-2)}
 .rcard .art{height:140px}
-.medal{position:absolute;left:12px;bottom:12px;display:inline-flex;align-items:center;gap:6px;background:rgba(15,12,10,.78);color:#fff;font-size:12px;font-weight:600;padding:5px 10px 5px 8px;border-radius:99px}
-.medal svg{width:14px;height:14px}
-.player{position:relative;aspect-ratio:16/9;max-width:100%;border-radius:var(--r-lg);overflow:hidden;display:grid;place-items:center;background:#0f0c0a;color:#fff}
-.player .art{position:absolute;inset:0;border-radius:0;opacity:.55}
-.player .inner{position:relative;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center;padding:20px}
-.player .play{width:68px;height:68px;border-radius:50%;background:#fff;color:#0f0c0a;display:grid;place-items:center;text-decoration:none}
-.player .play svg{width:28px;height:28px;margin-left:4px}
-.player a.lnk{color:#fff}
 .steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px}
 .ing{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
 
@@ -313,7 +315,7 @@ table.nut td:last-child{text-align:right;font-variant-numeric:tabular-nums}
 #wolfie{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:35}
 .wb-fab{width:64px;height:64px;border-radius:50%;border:3px solid #fff;background:var(--surface);box-shadow:var(--e-3);transition:transform var(--t) var(--ease);cursor:pointer;padding:0;overflow:hidden;display:grid;place-items:center}
 .wb-fab img,.wb-fab svg{width:100%;height:100%;object-fit:cover;display:block}
-.wb-panel{width:min(380px,calc(100vw - 32px));height:min(580px,calc(100vh - 120px));background:var(--surface);border:1px solid var(--line-2);border-radius:20px;box-shadow:var(--e-3);display:flex;flex-direction:column;overflow:hidden}
+.wb-panel{width:min(340px,calc(100vw - 32px));height:min(480px,calc(100vh - 120px));background:var(--surface);border:1px solid var(--line-2);border-radius:20px;box-shadow:var(--e-3);display:flex;flex-direction:column;overflow:hidden}
 .wb-head{display:flex;align-items:center;gap:10px;padding:12px 12px 12px 14px;border-bottom:1px solid var(--line);background:var(--surface)}
 .wb-head .who{min-width:0;flex:1}
 .wb-head .face{width:38px;height:38px;border-radius:50%;overflow:hidden;flex:none;border:1px solid var(--line)}
@@ -326,20 +328,16 @@ table.nut td:last-child{text-align:right;font-variant-numeric:tabular-nums}
 .wb-panel .composer{padding:10px;gap:6px}
 .wb-panel .composer .iconbtn{border-radius:50%;width:44px;height:44px;flex:none}
 .wb-panel .composer .iconbtn[aria-pressed="true"]{background:var(--brand);color:#fff;border-color:var(--brand)}
-.wb-panel{position:relative;transform-origin:100% 50%;backface-visibility:hidden}
-.wb-panel::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(90deg,rgba(0,0,0,.22),rgba(0,0,0,0) 35%,rgba(255,255,255,0) 50%,rgba(0,0,0,.08) 50.5%,rgba(0,0,0,0) 65%);opacity:0}
-#wolfie{perspective:1600px}
+.wb-panel{position:relative;transform-origin:100% 100%}
 @media (prefers-reduced-motion:no-preference){
-.wb-panel.opening{animation:wb-unfold .6s cubic-bezier(.18,.85,.25,1)}
-.wb-panel.opening::after{animation:wb-crease .6s ease-out}
-.wb-panel.closing{animation:wb-fold .4s cubic-bezier(.55,0,.75,.2) forwards}
-.wb-panel.closing::after{animation:wb-crease-in .4s ease-in forwards}
+.wb-panel.opening{animation:wb-grow .24s cubic-bezier(.2,.85,.25,1)}
+.wb-panel.closing{animation:wb-shrink .2s cubic-bezier(.4,0,.8,.3) forwards;pointer-events:none}
 .wb-fab.landing{animation:wb-land .3s ease-out}
-@keyframes wb-unfold{0%{transform:rotateY(-92deg) scaleX(.35);opacity:.2}55%{transform:rotateY(10deg) scaleX(1);opacity:1}78%{transform:rotateY(-4deg)}100%{transform:rotateY(0)}}
-@keyframes wb-fold{0%{transform:rotateY(0)}100%{transform:rotateY(-92deg) scaleX(.35);opacity:0}}
-@keyframes wb-crease{0%{opacity:1}100%{opacity:0}}
-@keyframes wb-crease-in{0%{opacity:0}100%{opacity:1}}
+@keyframes wb-grow{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:none}}
+@keyframes wb-shrink{from{opacity:1;transform:none}to{opacity:0;transform:scale(.55)}}
 @keyframes wb-land{0%{transform:scale(.6)}70%{transform:scale(1.08)}100%{transform:scale(1)}}}
+.wb-head .iconbtn[aria-pressed="true"]{background:var(--brand-tint);color:var(--brand-text)}
+.wb-head [data-act="wb-pin"][aria-pressed="true"] svg{fill:currentColor}
 .wb-note{font-size:11.5px;color:var(--muted);padding:0 14px 10px;line-height:1.4}
 /* Nutrition dashboard block. Calorie progress is one continuous container with a bottom-up fill behind the values. */
 .nd{--nd-surface:var(--surface);--nd-line:var(--line);--nd-fg:var(--fg);--nd-muted:var(--muted);--nd-accent:var(--brand);
@@ -347,8 +345,8 @@ table.nut td:last-child{text-align:right;font-variant-numeric:tabular-nums}
 .nd-main{position:relative;isolation:isolate;overflow:hidden;flex:3.2 1 560px;min-width:0;min-height:468px;background:var(--nd-surface);border:1px solid var(--nd-line);border-radius:var(--r-xl);padding:40px 44px;display:flex;text-decoration:none;color:inherit;cursor:pointer;box-shadow:var(--e-1);transition:box-shadow var(--t) var(--ease),border-color var(--t) var(--ease)}
 .nd-main:hover{box-shadow:var(--e-2);border-color:var(--line-2)}
 .nd-main:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:var(--r-xl)}
-.nd-fill{position:absolute;left:0;right:0;bottom:0;z-index:-1;background:var(--brand-tint-2);transition:height var(--t-slow) var(--ease);pointer-events:none}
-.nd-nums{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:24px}
+.nd-fill{position:absolute;left:0;bottom:0;width:100%;z-index:-1;color:var(--brand-tint-2);transition:height var(--t-slow) var(--ease);touch-action:pan-y}
+.nd-nums{position:relative;z-index:1;pointer-events:none;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:24px}
 .nd-sec{display:flex;flex-direction:column;gap:8px}
 .nd-lbl{font-size:18px;font-weight:500;color:var(--nd-muted);line-height:1.3}
 .nd-val{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
@@ -356,10 +354,16 @@ table.nut td:last-child{text-align:right;font-variant-numeric:tabular-nums}
 .nd-val .u{font-size:18px;font-weight:500;color:var(--nd-muted)}
 .nd-note{font-size:14px;font-weight:500;color:var(--nd-muted)}
 .nd-div{height:1px;width:56px;background:var(--nd-line)}
-.nd-hint{position:absolute;right:28px;top:26px;font-size:13px;font-weight:600;color:var(--nd-muted);opacity:0;transform:translateX(-4px);transition:opacity var(--t) var(--ease),transform var(--t) var(--ease)}
+.nd-hint{pointer-events:none;position:absolute;right:28px;top:26px;font-size:13px;font-weight:600;color:var(--nd-muted);opacity:0;transform:translateX(-4px);transition:opacity var(--t) var(--ease),transform var(--t) var(--ease)}
 .nd-main:hover .nd-hint,.nd-main:focus-visible .nd-hint{opacity:1;transform:none}
 .nd-side{flex:1 1 220px;min-width:0;display:flex;flex-direction:column;gap:20px}
-.nd-card{flex:1;background:var(--nd-surface);border:1px solid var(--nd-line);border-radius:var(--r-lg);padding:20px 26px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.nd-card{--terra:#C27A63;--blush:#FDF7F3;flex:1;background:var(--nd-surface);border:1px solid var(--nd-line);border-radius:var(--r-lg);padding:16px 26px;display:flex;flex-direction:column;justify-content:center;gap:6px;transition:transform .25s var(--ease),border-color .25s var(--ease),background-color .25s var(--ease),box-shadow .25s var(--ease)}
+.nd-card:focus:not(:focus-visible){outline:none}
+.nd-card:focus-visible{outline:2px solid var(--terra);outline-offset:3px}
+.nd-more{font-size:13px;font-weight:500;line-height:17px;min-height:17px;color:var(--nd-muted);opacity:0;transition:opacity 250ms ease}
+.nd-card:hover,.nd-card:focus-visible{transform:translateY(-4px);border-color:var(--terra);background:var(--blush);box-shadow:0 12px 26px -12px rgba(168,92,66,.38),0 2px 6px rgba(168,92,66,.10)}
+.nd-card:hover .nd-more,.nd-card:focus-visible .nd-more{opacity:1}
+@media (hover:none){.nd-card:focus{transform:translateY(-4px);border-color:var(--terra);background:var(--blush);box-shadow:0 12px 26px -12px rgba(168,92,66,.38),0 2px 6px rgba(168,92,66,.10)}.nd-card:focus .nd-more{opacity:1}}
 .nd-card .nd-val b{font-size:44px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media (max-width:767px){
@@ -372,7 +376,7 @@ table.nut td:last-child{text-align:right;font-variant-numeric:tabular-nums}
 .disclaimer{font-size:12.5px;color:var(--muted);max-width:80ch}
 
 @media (max-width:1180px){.mealbar{display:flex}.menu-layout{grid-template-columns:minmax(0,1fr)}.side-panel{display:none}.agent{grid-template-columns:minmax(0,1fr)}.profile-layout{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:1023px){:root{--rail:76px}.rail .lbl-t,.rail .eyebrow,.rail .cloud span,.brand b,.nav .count{display:none}.nav a{justify-content:center}.rail{padding:20px 10px}.cloud{justify-content:center}.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.planner{grid-template-columns:minmax(0,1fr)}.ledger{position:static}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1023px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.planner{grid-template-columns:minmax(0,1fr)}.ledger{position:static}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:767px){
   .app{grid-template-columns:minmax(0,1fr)}
   .rail{display:none}
@@ -408,14 +412,14 @@ table.nut td:last-child{text-align:right;font-variant-numeric:tabular-nums}
 
 <div class="app">
   <aside class="rail" aria-label="Main navigation">
-    <div class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></span><b>Wolfie Butler</b></div>
+    <div class="brand"><span class="logo" aria-hidden="true"><img class="mascot" src="assets/wolfie-mascot.png" alt=""></span><b>Wolfie Butler</b></div>
     <nav class="nav" id="nav-main"></nav>
     <div class="rail-foot">
       <nav class="nav" id="nav-foot"></nav>
       <div class="cloud" id="cloud-status"><i class="dot"></i><span>Connecting…</span></div>
     </div>
   </aside>
-  <header class="topbar"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></span><b>Wolfie Butler</b><a class="iconbtn" href="#profile" aria-label="Profile and targets" data-act="go" data-view="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></a></header>
+  <header class="topbar"><span class="logo" aria-hidden="true"><img class="mascot" src="assets/wolfie-mascot.png" alt=""></span><b>Wolfie Butler</b><a class="iconbtn" href="#profile" aria-label="Profile and targets" data-act="go" data-view="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></a></header>
   <main class="main"><div class="wrap" id="view" aria-live="polite"></div></main>
   <nav class="tabbar" id="tabbar" aria-label="Main navigation"></nav>
 </div>
@@ -427,7 +431,7 @@ table.nut td:last-child{text-align:right;font-variant-numeric:tabular-nums}
 /* =========================================================================
    Wolfie Butler — single-file build.
    Layers (top to bottom): CONFIG · NutritionService · MenuProvider (Nutrislice)
-   · MealPlanService · RecommendationService · RecipeService + MedalProvider
+   · MealPlanService · RecommendationService · RecipeService
    · AgentService + PhotonBridge · Persistence (cloud db with device fallback)
    · UI. UI code only calls the services; it never re-implements a formula.
    ========================================================================= */
@@ -448,9 +452,9 @@ const CONFIG = {
   },
   // Replace these with your own image paths (an uploaded asset path like "/_blob/<id>", or a data: URI).
   // Leave empty to show the built-in illustration. Developers update these paths directly in code.
-  hallImages: { west: "", east: "" },
+  hallImages: { west: "assets/west-side-dining-hall.jpg", east: "assets/east-side-dining-hall.jpg" },
   // Chatbot icon: replace with your own image path (an uploaded asset "/_blob/<id>" or a data: URI). Empty = placeholder image.
-  chatIcon: "",
+  chatIcon: "assets/wolfie-mascot.png",
   dayShares: { Breakfast: 0.25, Lunch: 0.35, Dinner: 0.40 },
   calTolerance: 50,
   carbPct: [0.45, 0.65],
@@ -471,7 +475,6 @@ const CONFIG = {
   allergyOptions: ["Milk","Egg","Wheat","Soy","Peanut","Tree nut","Fish","Shellfish","Sesame"],
   safetyWarning: "Your requested goal may not be appropriate for your individual needs. We cannot safely generate this plan automatically. Please consult a qualified healthcare professional or registered dietitian for personalized guidance."
 };
-const nutrisliceUrl = (hallId, iso) => { const h = CONFIG.halls[hallId]; const [y,m,d] = iso.split("-"); return `https://stonybrook.api.nutrislice.com/menu/api/weeks/school/${h.slug}/menu-type/${h.menuType}/${y}/${m}/${d}/?format=json`; };
 
 /* ---------------- NutritionService ---------------- */
 const NutritionService = (() => {
@@ -492,6 +495,7 @@ const NutritionService = (() => {
       else if (n.heightCm < 100 || n.heightCm > 250) errors.height = "That height looks unusual. Check the number and the unit (inches, not feet).";
     if (!p.sex) missing.push("gender");
     if (!p.activity) missing.push("activity level"); else if (!CONFIG.activity[p.activity]) errors.activity = "Pick one of the listed activity levels.";
+    if (String(p.phone ?? "").trim() && !normalizePhone(p.phone)) errors.phone = "Enter your phone number with its country code, like +1 555 123 4567.";   // the phone is optional; only a filled-in one is checked
     return { errors, missing, ok: !Object.keys(errors).length };
   }
   function fiberFor(sex, age){
@@ -748,16 +752,9 @@ const DayPlanService = {
   }
 };
 
-/* ---------------- RecipeService + MedalProvider ---------------- */
-const MedalProvider = {
-  parse(url){
-    if (!url) return null;
-    try { const u = new URL(String(url).trim()); if (u.protocol !== "https:" || !/(^|\.)medal\.tv$/i.test(u.hostname)) return null;
-      const m = u.pathname.match(/clips?\/([A-Za-z0-9_-]+)/); return { url:u.href, clipId: m ? m[1] : null }; } catch { return null; }
-  }
-};
-
 /* ---------------- Utilities ---------------- */
+/** "+1 (555) 123-4567" -> "+15551234567". The country code is required because the site is used internationally. */
+function normalizePhone(raw){ const s = String(raw ?? "").trim(); if (!s.startsWith("+")) return null; const d = s.replace(/[\s().-]/g, ""); return /^\+[1-9]\d{7,14}$/.test(d) ? d : null; }
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 function fmt(v, d=0){ if (!NutritionService.isNum(v)) return "N/A"; const r = Math.round(Number(v)*Math.pow(10,d))/Math.pow(10,d); return r.toLocaleString("en-US",{maximumFractionDigits:d}); }
 const range = r => (r && NutritionService.isNum(r.min) && NutritionService.isNum(r.max)) ? (r.min === r.max ? fmt(r.min) : `${fmt(r.min)}–${fmt(r.max)}`) : "N/A";
@@ -776,6 +773,7 @@ const ICONS = {
   recipes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
   heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.5 1.1 5 3 1.5-1.9 3-3 5-3 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z"/></svg>',
   speaker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>',
+  pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>',
   minus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg>',
   copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>',
   agent:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.9-.9L3 21l1.9-4.6A8.4 8.4 0 1 1 21 11.5Z"/></svg>',
@@ -787,7 +785,6 @@ const ICONS = {
   info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
   upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>',
   ext:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>',
-  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>',
   send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>',
   spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>',
   leaf:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>'
@@ -835,7 +832,7 @@ const Store = {
 };
 
 /* ---------------- App state ---------------- */
-const EMPTY_PROFILE = { name:"", age:"", sex:"", weight:"", weightUnit:"lb", height:"", heightUnit:"in", activity:"", goal:"", diet:[], allergies:[], targetMode:"estimated", custom:{cal:"",protein:"",carbs:"",fat:"",fiber:""}, targetWeight:"", timeframeWeeks:"", rapidChange:false };
+const EMPTY_PROFILE = { name:"", age:"", sex:"", weight:"", weightUnit:"lb", height:"", heightUnit:"in", activity:"", goal:"", diet:[], allergies:[], targetMode:"estimated", custom:{cal:"",protein:"",carbs:"",fat:"",fiber:""}, targetWeight:"", timeframeWeeks:"", rapidChange:false, phone:"", updatedAt:"" };
 const S = {
   view:"overview", hall:"west", site:{}, recTab:null, date:todayISO(), menus:{}, recipes:[], profile:null, plan:{ items:[] }, saveState:"idle",
   q:"", station:"All", labels:[], period:"Any", favs:{}, adding:null, useFavs:true, seed:0, chatOpen:true, voice:false, recs:null, recipeQ:"", recipeCats:[], recipeOpen:null, chat:[], chatBusy:false, profileErrors:{}, confirm:null
@@ -884,14 +881,14 @@ const NAV = [
 ];
 const NAV_FOOT = [ { v:"profile", label:"Profile & targets", ic:"profile" } ];
 function paintNav(){
-  const a = (n, short) => `<a href="#${n.v}" data-act="go" data-view="${n.v}" ${S.view===n.v?'aria-current="page"':''}>${icon(n.ic)}<span class="lbl-t">${short ? (n.short||n.label) : n.label}</span>${n.v==="planner"?`<span class="count" data-plancount ${S.plan.items.length?"":"hidden"}>${planCount()}</span>`:""}</a>`;
+  const a = (n, short) => `<a href="#${n.v}" data-act="go" data-view="${n.v}" title="${esc(n.label)}" ${S.view===n.v?'aria-current="page"':''}>${icon(n.ic)}<span class="lbl-t">${short ? (n.short||n.label) : n.label}</span>${n.v==="planner"?`<span class="count" data-plancount ${S.plan.items.length?"":"hidden"}>${planCount()}</span>`:""}</a>`;
   document.getElementById("nav-main").innerHTML = `<div class="eyebrow">Workspace</div>` + NAV.map(n=>a(n)).join("");
   document.getElementById("nav-foot").innerHTML = NAV_FOOT.map(n=>a(n)).join("");
   document.getElementById("tabbar").innerHTML = NAV.map(n=>a(n,true)).join("");
 }
 const planCount = () => S.plan.items.reduce((a,b)=>a+b.servings,0);
 function paintNavCounts(){ document.querySelectorAll("[data-plancount]").forEach(el => { el.textContent = planCount(); el.hidden = !S.plan.items.length; }); }
-function go(v){ if (!VIEWS[v]) v = "overview"; S.view = v; if (v !== "recipes") S.recipeOpen = null; paintNav(); render(); window.scrollTo({top:0}); }
+function go(v){ if (!VIEWS[v]) v = "overview"; S.view = v; if (v !== "profile") S.draft = null; if (v !== "recipes") S.recipeOpen = null; paintNav(); render(); window.scrollTo({top:0}); }
 
 /* ---------------- Shared view pieces ---------------- */
 function art(seed, glyph, cls=""){ return `<div class="art ${cls}" style="--h:${hueOf(seed)}" aria-hidden="true"><span class="plate"></span><span class="glyph">${esc(glyph)}</span></div>`; }
@@ -914,7 +911,7 @@ function hallMedia(h){
   return `<div class="photo">${HALL_SVG[h.id] || ""}${src ? `<img src="${esc(src)}" alt="${esc(h.name)}" onerror="this.remove()">` : ""}</div>`;
 }
 const CHAT_PLACEHOLDER = `<svg viewBox="0 0 64 64" role="img" aria-label="Wolfie Butler"><rect width="64" height="64" fill="#EDEDED"/><rect x="14" y="17" width="36" height="30" rx="4" fill="none" stroke="#9A9A9A" stroke-width="3"/><circle cx="25" cy="27" r="4" fill="#9A9A9A"/><path d="M16 44l11-11 7 7 5-5 9 9" fill="none" stroke="#9A9A9A" stroke-width="3" stroke-linejoin="round"/></svg>`;
-function mascot(){ const up = S.site?.mascotId; const src = up ? "/_blob/" + up : CONFIG.chatIcon; return src ? `<img src="${esc(src)}" alt="Wolfie Butler" onerror="this.outerHTML=CHAT_PLACEHOLDER">` : CHAT_PLACEHOLDER; }
+function mascot(){ const up = S.site?.mascotId; const src = CONFIG.chatIcon || (up ? "/_blob/" + up : ""); return src ? `<img class="mascot" src="${esc(src)}" alt="Wolfie Butler" onerror="this.outerHTML=CHAT_PLACEHOLDER">` : CHAT_PLACEHOLDER; }
 const defaultPeriod = st => S.period !== "Any" ? S.period : (periodOf(st) !== "All day" ? periodOf(st) : timePeriod());
 function conflictsOf(f){
   const out = [], al = (S.profile?.allergies || []).map(a => a.toLowerCase());
@@ -972,7 +969,7 @@ VIEWS.menus = () => {
   const loaded = datesFor(S.hall);
   return `
   <div class="page-head"><div><a href="#overview" data-act="go" data-view="overview" class="small">← Overview</a><h1 style="margin-top:6px">${h.name}</h1></div>
-    <div class="head-actions">${hallSeg()}${dateSelect("mn-date", S.hall)}<button class="btn" data-act="import" title="Load a menu from Nutrislice">${icon("upload")}Import menu</button></div></div>
+    <div class="head-actions">${hallSeg()}${dateSelect("mn-date", S.hall)}</div></div>
   ${m ? `
   <div style="display:flex;flex-direction:column;gap:12px">
     <div class="search">${icon("search")}<input class="input" id="menu-q" type="search" placeholder="Search dishes at ${esc(h.short)}" value="${esc(S.q)}" aria-label="Search dishes"></div>
@@ -988,8 +985,7 @@ VIEWS.menus = () => {
   <div class="mealbar" id="mealbar" aria-live="polite"></div>
   <p class="xs muted">Source: Nutrislice, imported ${esc(new Date(m.importedAt).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}))}. Dishes can change at the station.</p>`
   : `<div class="empty"><h3>No ${esc(h.short)} menu for ${esc(niceDate(S.date))} yet</h3>
-      <p style="max-width:52ch">Menus are saved to the cloud once someone imports them from Nutrislice, and then everyone on the team sees them.</p>
-      <button class="btn primary" data-act="import">${icon("upload")}Import ${esc(niceDate(S.date,{month:"short",day:"numeric"}))} menu</button>
+      <p style="max-width:52ch">This menu hasn't been loaded yet. Try another date or dining hall.</p>
       ${loaded.length ? `<p class="small">Loaded dates for ${esc(h.short)}: ${loaded.map(d => `<a href="#menus" data-act="pick-date" data-date="${d}">${esc(niceDate(d))}</a>`).join(", ")}</p>` : ""}</div>`}`;
 };
 function paintMealBar(){
@@ -1094,7 +1090,7 @@ function dayPlanHtml(t){
   const sel = S.plan.items.filter(i => i.hall === S.hall && i.date === S.date);
   const dp = DayPlanService.build({ menu:currentMenu(), profile:S.profile, targetCal:t.cal, selected:sel, favs:S.favs, useFavs:S.useFavs, seed:S.seed });
   S.dayPlan = dp;
-  if (dp.status === "nomenu") return `<div class="empty" style="padding:18px"><p class="small">Import this menu to get a day plan.</p></div>`;
+  if (dp.status === "nomenu") return `<div class="empty" style="padding:18px"><p class="small">This menu isn't loaded yet, so there's no day plan.</p></div>`;
   const tab = S.recTab || timePeriod();
   const sum = dp.status === "notarget" ? `<div class="daytotal"><b class="num">${fmt(dp.total)} kcal for the day</b><span class="xs muted">No daily energy target is set, so this plan uses typical meal sizes. <a href="#profile" data-act="go" data-view="profile">Add your profile</a> to aim for a target.</span></div>`
     : `<div class="daytotal ${dp.within?"ok":"off"}"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b class="num">${fmt(dp.total)} of ${fmt(dp.target)} kcal</b><span class="num small" style="font-weight:600;color:${dp.within?"var(--ok)":"var(--warn)"}">${dp.diff===0?"On target":`${fmt(Math.abs(dp.diff))} kcal ${dp.diff>0?"under":"over"}`}</span></div>
@@ -1132,10 +1128,21 @@ function calorieOverview(t, why){
   const pctRaw = est !== null && cur !== null ? cur / est * 100 : null;
   const fill = pctRaw === null ? 0 : Math.min(100, Math.max(0, pctRaw));
   const val = (v, u) => `<span class="nd-val"><b>${v===null?"N/A":fmt(v)}</b>${v===null?"":`<span class="u">${u}</span>`}</span>`;
-  const macro = (k, l) => { const v = items.length ? n.totals[k] : 0; return `<div class="nd-card"><span class="nd-lbl">${l}</span>${val(v, "g")}</div>`; };
+  // Remaining-to-goal line for a nutrient card. A range target (min/max) counts as reached at its lower end.
+  const goalOf = g => isN(g) ? g : (g && isN(g.min) ? g.min : null);
+  const UNIT = { carbs:"g", protein:"g", fiber:"g", fat:"g" };
+  const remainingLine = (k, v) => {
+    const goal = goalOf(t[k]);
+    if (goal === null || !(goal > 0)) return "Set your daily goal to see what remains.";
+    if (v === null) return "Some dishes don't list this, so what remains can't be shown.";
+    const left = Math.max(goal - v, 0);
+    if (left === 0) return "Daily goal reached!";
+    return Number(fmt(left)) === 0 ? `Under 1${UNIT[k]} more to reach your goal.` : `${fmt(left)}${UNIT[k]} more to reach your goal.`;
+  };
+  const macro = (k, l) => { const v = items.length ? n.totals[k] : 0; return `<div class="nd-card" role="group" aria-label="${l}" tabindex="0"><span class="nd-lbl">${l}</span>${val(v, "g")}<span class="nd-more">${esc(remainingLine(k, v))}</span></div>`; };
   return `<section class="nd" aria-label="Nutrition dashboard">
-    <a class="nd-main" href="#planner" data-act="go" data-view="planner" aria-label="Open the Meal planner. Current ${cur===null?"not available":fmt(cur)+" kcal"}, estimated ${est===null?"not available":fmt(est)+" kcal"}${pctRaw===null?"":`, ${fmt(pctRaw)}% of the estimate`}.">
-      ${pctRaw===null ? "" : `<div class="nd-fill" style="height:${fill}%" aria-hidden="true"></div>`}
+    <a class="nd-main" href="#planner" draggable="false" data-act="go" data-view="planner" aria-label="Open the Meal planner. Current ${cur===null?"not available":fmt(cur)+" kcal"}, estimated ${est===null?"not available":fmt(est)+" kcal"}${pctRaw===null?"":`, ${fmt(pctRaw)}% of the estimate`}.">
+      ${pctRaw===null ? "" : `<canvas class="nd-fill" style="height:calc(${fill}% + ${LIQUID.head}px)" aria-hidden="true"></canvas>`}
       <span class="nd-hint" aria-hidden="true">Open meal planner →</span>
       <div class="nd-nums">
         <div class="nd-sec"><span class="nd-lbl">Current</span>${val(cur, "kcal")}${cur===null ? `<span class="nd-note">${n.missing.cal} dish${n.missing.cal>1?"es don't":" doesn't"} list calories</span>` : ""}</div>
@@ -1148,27 +1155,24 @@ function calorieOverview(t, why){
 }
 /* recipes */
 function recipeCard(r){
-  const medal = MedalProvider.parse(r.medalUrl);
-  return `<button class="rcard" data-act="recipe" data-id="${esc(r._id)}"><div style="position:relative">${recipeMedia(r)}${medal?`<span class="medal">${icon("play")}Medal clip</span>`:""}</div>
+  return `<button class="rcard" data-act="recipe" data-id="${esc(r._id)}"><div style="position:relative">${recipeMedia(r)}</div>
     <h3>${esc(r.title)}</h3><p class="small muted" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(r.description)}</p>
     <div class="chips" style="gap:5px"><span class="tag">${esc(r.prepMinutes)} min</span>${(r.labels||[]).slice(0,2).map(l=>`<span class="tag">${esc(l)}</span>`).join("")}</div>
     <span class="xs muted num">${NutritionService.isNum(r.nutrition?.cal) ? `${fmt(r.nutrition.cal)} kcal per serving` : "Nutrition not calculated"}</span></button>`;
 }
 function mediaBlock(r, big){
-  const medal = MedalProvider.parse(r.medalUrl);
-  if (medal) return `<div class="player">${r.thumbId ? `<img src="/_blob/${esc(r.thumbId)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.6" onerror="this.remove()">` : art(r.title, "")}<div class="inner"><a class="play" href="${esc(medal.url)}" target="_blank" rel="noopener" aria-label="Watch ${esc(r.title)} on Medal">${icon("play")}</a><b>Watch the clip on Medal</b><a class="lnk small" href="${esc(medal.url)}" target="_blank" rel="noopener">${esc(medal.url.replace(/^https:\/\//,""))}</a><span class="xs" style="opacity:.75">Opens on medal.tv in a new tab</span></div></div>`;
   return recipeMedia(r, "").replace('class="photo "','class="photo " style="aspect-ratio:16/9;border-radius:var(--r-lg)"');
 }
 VIEWS.recipes = () => {
   if (S.recipeOpen) return recipeDetail(S.recipes.find(r => r._id === S.recipeOpen));
   const cats = ["All", ...new Set(S.recipes.flatMap(r => r.labels || []))];
   const list = S.recipes.filter(r => S.recipeCats.every(c => (r.labels||[]).includes(c)) && (!S.recipeQ || (r.title+" "+r.description+" "+(r.ingredients||[]).join(" ")).toLowerCase().includes(S.recipeQ.toLowerCase())));
-  const feat = S.recipes.find(r => MedalProvider.parse(r.medalUrl)) || S.recipes[0];
+  const feat = S.recipes[0];
   return `
   <div class="page-head"><div><h1>Discover recipes</h1><p class="lead">Find inspiration for your next meal.</p></div>
     <div class="head-actions"><div class="search" style="min-width:min(300px,100%)">${icon("search")}<input class="input" id="recipe-q" type="search" placeholder="Search recipes" value="${esc(S.recipeQ)}" aria-label="Search recipes"></div><button class="btn" data-act="new-recipe">${icon("plus")}Add recipe</button></div></div>
-  ${!S.recipes.length ? `<div class="empty"><h3>No recipes yet</h3><p>Add a recipe and link a Medal clip to show how it's made.</p><button class="btn primary" data-act="new-recipe">Add recipe</button></div>` : `
-  ${feat && !S.recipeQ && !S.recipeCats.length ? `<article class="card feature"><div style="position:relative;min-width:0">${MedalProvider.parse(feat.medalUrl) ? mediaBlock(feat,true).replace('class="player"','class="player" style="border-radius:0;height:100%"') : recipeMedia(feat,"").replace('class="photo "','class="photo " style="height:100%;min-height:260px"')}</div>
+  ${!S.recipes.length ? `<div class="empty"><h3>No recipes yet</h3><p>Add a recipe to get started.</p><button class="btn primary" data-act="new-recipe">Add recipe</button></div>` : `
+  ${feat && !S.recipeQ && !S.recipeCats.length ? `<article class="card feature"><div style="position:relative;min-width:0">${recipeMedia(feat,"").replace('class="photo "','class="photo " style="height:100%;min-height:260px"')}</div>
     <div class="body"><span class="eyebrow">Featured</span><h2 style="font-size:clamp(22px,2.6vw,28px)">${esc(feat.title)}</h2><p class="muted">${esc(feat.description)}</p>
     <div class="chips" style="gap:6px"><span class="tag">${esc(feat.prepMinutes)} min</span>${(feat.labels||[]).map(l=>`<span class="tag">${esc(l)}</span>`).join("")}</div>
     <div><button class="btn primary" data-act="recipe" data-id="${esc(feat._id)}">View recipe</button></div></div></article>` : ""}
@@ -1204,8 +1208,7 @@ function paintWidget(){
   const anim = S.wbAnim; S.wbAnim = false;
   w.innerHTML = `<section class="wb-panel ${anim?"opening":""}" role="dialog" aria-label="Wolfie Butler chat">
     <div class="wb-head"><span class="face">${mascot()}</span><div class="who"><b>Wolfie Butler</b><div class="xs muted">Web chat on Gemini · iMessage via Photon</div></div>
-      <button class="iconbtn" data-act="copy-brief" title="Copy brief for your Photon iMessage agent" aria-label="Copy brief for your Photon iMessage agent">${icon("copy")}</button>
-      ${Store.assets ? `<label class="iconbtn" title="Change icon" aria-label="Change chatbot icon" data-act="noop" style="cursor:pointer">${icon("upload")}<input type="file" accept="image/png,image/jpeg,image/webp" data-upload="mascot" hidden></label>` : ""}
+      <button class="iconbtn" data-act="wb-pin" aria-pressed="${!!S.wbPinned}" title="${S.wbPinned?"Unpin chat (it closes when the cursor leaves)":"Pin chat open"}" aria-label="${S.wbPinned?"Unpin chat":"Pin chat open"}">${icon("pin")}</button>
       <button class="iconbtn" data-act="wb-close" aria-label="Minimize chat">${icon("minus")}</button></div>
     <div class="msgs" id="msgs"></div>
     ${!S.chat.length ? `<div class="prompts">${["Build me a lunch from this menu.","Explain my meal's nutrition.","Suggest swaps from available foods."].map(p=>`<button class="chip" data-act="prompt" data-p="${esc(p)}">${esc(p)}</button>`).join("")}</div>` : ""}
@@ -1216,18 +1219,18 @@ function paintWidget(){
   </section>`;
   paintMsgs();
 }
-let wbLast = Date.now(), wbClosing = false;
+let wbLast = Date.now(), wbClosing = false, wbHover = false, wbSuppress = false, wbLeaveT = 0;
 function openWidget(){ if (S.chatOpen) return; S.chatOpen = true; S.wbAnim = true; wbTouch(); paintWidget(); }
 function closeWidget(){
   if (!S.chatOpen || wbClosing) return;
   const panel = document.querySelector("#wolfie .wb-panel");
-  const done = () => { wbClosing = false; S.chatOpen = false; S.wbAnim = true; paintWidget(); };
+  const done = () => { wbClosing = false; S.chatOpen = false; S.wbAnim = true; paintWidget(); if (wbHover && !wbSuppress && !S.wbPinned) openWidget(); };
   if (!panel || matchMedia("(prefers-reduced-motion: reduce)").matches) return done();
-  wbClosing = true; panel.classList.remove("opening"); panel.classList.add("closing"); setTimeout(done, 400);
+  wbClosing = true; panel.classList.remove("opening"); panel.classList.add("closing"); setTimeout(done, 220);
 }
 const wbTouch = () => { wbLast = Date.now(); };
 setInterval(() => {
-  if (!S.chatOpen || S.chatBusy) return;
+  if (!S.chatOpen || S.chatBusy || S.wbPinned || wbHover) return;
   const inp = document.getElementById("chat-in");
   if (inp && inp.value.trim()) return;
   if (Date.now() - wbLast > 7000) closeWidget();
@@ -1251,7 +1254,7 @@ function mdLite(s){
 
 /* profile */
 VIEWS.profile = () => {
-  const p = S.profile || { ...EMPTY_PROFILE }, e = S.profileErrors;
+  const p = S.draft || S.profile || { ...EMPTY_PROFILE }, e = S.profileErrors;   // the draft keeps what was typed when a save is refused
   const isNew = !S.profile;
   return `
   <div class="page-head"><div>${isNew?`<span class="eyebrow">Step 1 of 1</span>`:""}<h1>${isNew?"Set up your profile":"Profile & targets"}</h1><p class="lead">Estimates depend on the information you give. Everything except your name is optional for browsing menus.</p></div>
@@ -1266,6 +1269,11 @@ VIEWS.profile = () => {
           <div class="field"><label for="pf-w">Weight</label><div class="unit-row"><input class="input ${e.weight?"bad":""}" id="pf-w" name="weight" type="number" step="0.1" inputmode="decimal" value="${esc(p.weight)}"><select class="input" name="weightUnit" aria-label="Weight unit"><option value="lb" ${p.weightUnit==="lb"?"selected":""}>lb</option><option value="kg" ${p.weightUnit==="kg"?"selected":""}>kg</option></select></div>${e.weight?`<span class="err">${esc(e.weight)}</span>`:""}</div>
           <div class="field"><label for="pf-h">Height</label><div class="unit-row"><input class="input ${e.height?"bad":""}" id="pf-h" name="height" type="number" step="0.1" inputmode="decimal" value="${esc(p.height)}"><select class="input" name="heightUnit" aria-label="Height unit"><option value="in" ${p.heightUnit==="in"?"selected":""}>in</option><option value="cm" ${p.heightUnit==="cm"?"selected":""}>cm</option></select></div>${e.height?`<span class="err">${esc(e.height)}</span>`:`<span class="hint">In inches: 5′5″ is 65 in.</span>`}</div>
         </div></section>
+      <section class="form-sec"><h2>iMessage <span class="small muted" style="font-family:var(--f-body);font-weight:500">optional</span></h2>
+        <div class="field"><label for="pf-phone">Phone Number (Optional)</label><input class="input ${e.phone?"bad":""}" id="pf-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+1 555 123 4567" value="${esc(p.phone)}">${e.phone?`<span class="err">${esc(e.phone)}</span>`:""}
+          <span class="hint">Include your country code. Entering a number here doesn't activate iMessage: it is only the number you'll text a link code from. Changing or removing it unlinks iMessage, and nobody else can see it.</span></div>
+        <div id="link-panel">${linkPanel()}</div>
+      </section>
       <section class="form-sec"><h2>Activity level</h2>
         <div class="act-grid" role="radiogroup" aria-label="Activity level">${Object.entries(CONFIG.activity).map(([k,a]) => `<label class="act-opt"><input type="radio" name="activity" value="${k}" ${p.activity===k?"checked":""}><span><b>${a.label}</b><span class="small muted">${a.desc}</span></span></label>`).join("")}</div></section>
       <section class="form-sec"><h2>Food preferences</h2>
@@ -1292,6 +1300,7 @@ VIEWS.profile = () => {
   <section class="grid g2">
     <div class="card" style="display:flex;flex-direction:column;gap:10px"><h2>Data and privacy</h2>
       <p class="small muted">${Store.mode==="cloud"&&Store.uid ? "Your profile and meal plan are saved in this app's cloud database, in a private space only you can read. Menus and recipes are shared with everyone who uses the app." : "Your profile and meal plan are saved in this browser. Menus and recipes come from the shared cloud when you're signed in."}</p>
+      <p class="small muted">Your phone number stays in your profile. The Wolfie Butler assistant only receives your profile details (never the number) and keeps just a one-way fingerprint of it once you link iMessage. Reset below to delete everything, including the assistant's copy.</p>
       ${S.confirm === "reset" ? `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="small">This deletes your profile and meal plan.</span><button class="btn danger" data-act="reset-yes">Delete my data</button><button class="btn ghost" data-act="confirm-no">Cancel</button></div>` : `<div><button class="btn danger" data-act="reset">Reset application data</button></div>`}</div>
     <div class="card" style="display:flex;flex-direction:column;gap:10px"><h2>Health resources</h2>
       ${CONFIG.healthResources.map(r => `<div><span class="xs muted">${esc(r.kind)}</span><br><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a></div>`).join("")}</div>
@@ -1300,7 +1309,7 @@ VIEWS.profile = () => {
 function readProfileForm(){
   const f = document.getElementById("profile-form"); if (!f) return S.profile;
   const fd = new FormData(f), base = S.draft || { ...(S.profile || EMPTY_PROFILE) };
-  const p = { ...base, name:fd.get("name")?.trim()||"", age:fd.get("age")||"", sex:fd.get("sex")||"", weight:fd.get("weight")||"", weightUnit:fd.get("weightUnit")||"lb",
+  const p = { ...base, name:fd.get("name")?.trim()||"", phone:fd.get("phone")?.trim()||"", age:fd.get("age")||"", sex:fd.get("sex")||"", weight:fd.get("weight")||"", weightUnit:fd.get("weightUnit")||"lb",
     height:fd.get("height")||"", heightUnit:fd.get("heightUnit")||"in", activity:fd.get("activity")||"", goal:fd.get("goal")||"",
     targetWeight:fd.get("targetWeight")||"", timeframeWeeks:fd.get("timeframeWeeks")||"", rapidChange:!!fd.get("rapidChange"),
     custom:{ cal:fd.get("c_cal")||"", protein:fd.get("c_protein")||"", carbs:fd.get("c_carbs")||"", fat:fd.get("c_fat")||"", fiber:fd.get("c_fiber")||"" } };
@@ -1313,7 +1322,8 @@ function ctHint(p, k){
   return rec === "N/A" ? "Recommended value: N/A (add your details above)" : `Recommended value: <b style="color:var(--fg)">${rec}</b>`;
 }
 function refreshProfileSide(p){
-  document.getElementById("est-panel").innerHTML = estimatePanel(p);
+  const side = document.getElementById("est-panel"); if (!side) return;   // the page may have changed while the input was being debounced
+  side.innerHTML = estimatePanel(p);
   const gc = document.getElementById("goal-check"); if (gc) gc.innerHTML = goalCheck(p);
   ["cal","protein","carbs","fat","fiber"].forEach(k => { const h = document.getElementById("ct-hint-"+k); if (h) h.innerHTML = ctHint(p,k); const inp = document.getElementById("ct-"+k); if (inp) inp.placeholder = ctHint({ ...p, custom:{} }, k).replace(/<[^>]+>/g,"").replace("Recommended value: ",""); });
 }
@@ -1368,19 +1378,6 @@ function foodDrawer(f, fromPlan){
     ${fromPlan ? "" : `<div style="display:flex;flex-direction:column;gap:10px;margin-top:auto"><div style="display:flex;gap:10px;align-items:center"><span class="lbl">Servings</span><div class="stepper" role="group" aria-label="Servings"><button data-act="dq" data-d="-1" aria-label="Fewer">−</button><output class="num" id="dq">1</output><button data-act="dq" data-d="1" aria-label="More">+</button></div><button class="btn sm ${isFav(f.id)?"primary":""}" style="margin-left:auto" data-act="fav-drawer" data-id="${esc(f.id)}" data-station="${esc(f.station)}">${icon("heart")}${isFav(f.id)?"Favourited":"Favourite"}</button></div>
       <div id="drawer-pick">${addPicker(f, true)}</div></div>`}`);
 }
-function importModal(){
-  const h = CONFIG.halls[S.hall];
-  openOverlay(`<div style="display:flex;align-items:flex-start;gap:12px"><div><h2>Import a Nutrislice menu</h2><p class="small muted" style="margin-top:4px">It's saved to the cloud, so everyone using Wolfie Butler sees it.</p></div><button class="iconbtn x" data-act="close" aria-label="Close">${icon("x")}</button></div>
-    <div class="field"><label for="im-hall">Dining hall</label><select class="input" id="im-hall">${Object.values(CONFIG.halls).map(x=>`<option value="${x.id}" ${x.id===S.hall?"selected":""}>${x.name}</option>`).join("")}</select></div>
-    <div class="field"><label for="im-date">Week containing</label><input class="input" id="im-date" type="date" value="${S.date}"></div>
-    <ol class="small" style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">
-      <li><a id="im-link" href="${esc(nutrisliceUrl(S.hall,S.date))}" target="_blank" rel="noopener">Open the ${esc(h.short)} menu API ${icon("ext").replace('<svg','<svg style="width:13px;height:13px;vertical-align:-1px"')}</a> in a new tab.</li>
-      <li>Select all of the page (Ctrl+A or ⌘A) and copy it.</li><li>Paste it below, or upload a saved .json file.</li></ol>
-    <div class="field"><label for="im-json">Menu JSON</label><textarea class="input" id="im-json" placeholder='{"start_date":"2026-10-18","days":[…]}'></textarea></div>
-    <div class="field"><label for="im-file" class="small">Or upload a file</label><input id="im-file" type="file" accept=".json,application/json,text/plain"></div>
-    <div id="im-msg" class="small"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button class="btn ghost" data-act="close">Cancel</button><button class="btn primary" data-act="do-import">${icon("upload")}Import to cloud</button></div>`, true);
-}
 function recipeModal(){
   openOverlay(`<form data-form="recipe" style="display:flex;flex-direction:column;gap:14px"><div style="display:flex;gap:12px"><h2>Add a recipe</h2><button type="button" class="iconbtn x" data-act="close" aria-label="Close">${icon("x")}</button></div>
     <div class="field"><label for="rc-t">Title</label><input class="input" id="rc-t" name="title" required></div>
@@ -1388,27 +1385,12 @@ function recipeModal(){
     <div class="grid g2"><div class="field"><label for="rc-m">Prep time (minutes)</label><input class="input" id="rc-m" name="prep" type="number" min="1" value="15"></div><div class="field"><label for="rc-l">Labels (comma separated)</label><input class="input" id="rc-l" name="labels" placeholder="Vegetarian, Dorm-friendly"></div></div>
     <div class="field"><label for="rc-i">Ingredients (one per line)</label><textarea class="input" id="rc-i" name="ingredients" style="font-family:var(--f-body);font-size:14px"></textarea></div>
     <div class="field"><label for="rc-s">Steps (one per line)</label><textarea class="input" id="rc-s" name="steps" style="font-family:var(--f-body);font-size:14px"></textarea></div>
-    <div class="field"><label for="rc-v">Medal clip link (optional)</label><input class="input" id="rc-v" name="medal" type="url" placeholder="https://medal.tv/clips/…"></div>
-    ${Store.assets ? `<div class="field"><label for="rc-th">Thumbnail image (optional)</label><input id="rc-th" name="thumb" type="file" accept="image/png,image/jpeg,image/webp"><span class="hint">For a Medal clip, use a screenshot of the clip. Without one, the card keeps its illustrated thumbnail.</span></div>` : ""}
+    ${Store.assets ? `<div class="field"><label for="rc-th">Thumbnail image (optional)</label><input id="rc-th" name="thumb" type="file" accept="image/png,image/jpeg,image/webp"><span class="hint">Without one, the card keeps its illustrated thumbnail.</span></div>` : ""}
     <span class="err" id="rc-err"></span>
     <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn primary" type="submit">Save recipe</button></div></form>`, true);
 }
 
 /* ---------------- Agent + Photon bridge ---------------- */
-const PhotonBridge = {
-  brief(){
-    const p = S.profile, t = targets(), n = NutritionService.calculateMealNutrition(S.plan.items);
-    const lines = ["WOLFIE BUTLER AGENT BRIEF", `Generated ${new Date().toLocaleString("en-US")}`, ""];
-    lines.push("STUDENT", p ? `Name: ${p.name || "not given"} · Goal: ${p.goal || "none"} · Activity: ${CONFIG.activity[p.activity]?.label || "not given"}` : "No profile saved.");
-    if (p) lines.push(`Dietary preferences: ${(p.diet||[]).join(", ") || "none"}`, `Allergies (hard exclusions): ${(p.allergies||[]).join(", ") || "none"}`);
-    lines.push("", `DAILY TARGETS (${t.source === "custom" ? "entered by student" : "estimated"})`, `Energy ${fmt(t.cal)} kcal · Protein ${range(t.protein)} g · Carbs ${range(t.carbs)} g · Fat ${fmt(t.fat)} g · Fiber ${fmt(t.fiber)} g`);
-    if (t.est.status === "restricted") lines.push("Personal estimates are restricted for this student. Do not suggest calorie targets or weight plans.");
-    lines.push("", "CURRENT MEAL PLAN", ...(S.plan.items.length ? S.plan.items.map(i => `- ${i.servings} × ${i.name} (${CONFIG.halls[i.hall].short}, ${i.date}) ${fmt(NutritionService.isNum(i.nutr.cal)?i.nutr.cal*i.servings:null)} kcal`) : ["(empty)"]), `Totals: ${fmt(n.totals.cal)} kcal, P ${fmt(n.totals.protein)} g, C ${fmt(n.totals.carbs)} g, F ${fmt(n.totals.fat)} g`);
-    Object.values(CONFIG.halls).forEach(h => { const m = S.menus[menuKey(h.id, S.date)]; lines.push("", `${h.name.toUpperCase()} · ${S.date}`, ...(m ? m.items.map(i => `- [${i.station}] ${i.name}: ${fmt(i.nutr.cal)} kcal, P ${fmt(i.nutr.protein)}, C ${fmt(i.nutr.carbs)}, F ${fmt(i.nutr.fat)}, fiber ${fmt(i.nutr.fiber)}${i.labels.length?` · ${i.labels.join(", ")}`:""}${i.allergens.length?` · contains ${i.allergens.join(", ")}`:" · allergens not listed"}`) : ["Menu not loaded."])); });
-    lines.push("", "RULES: Only recommend dishes listed above. N/A means not listed; never guess values. Never recommend a dish that contains a listed allergy. Estimates only, not medical advice.");
-    return lines.join("\n");
-  }
-};
 const AgentService = {
   ctl:null,
   context(){
@@ -1429,7 +1411,7 @@ Rules:
 - If dailyTargets.status is "restricted", don't give calorie targets or weight-change advice; suggest a doctor or registered dietitian.
 - Never create weight-loss or weight-gain plans. Estimates only, not medical advice.
 - When the student wants a dish added to their plan, call add_to_meal with its id and hall.
-- If a menu is "not loaded", tell them to import it on the Dining menus page.
+- If a menu is "not loaded", tell them it isn't available yet and suggest another date or dining hall.
 CONTEXT:
 ${this.context()}`; },
     // Wolfie Butler chat -> your iMessage agent (same brain, tools and data as iMessage).
@@ -1447,21 +1429,335 @@ ${this.context()}`; },
     });
     this.ctl = new AbortController();
     try {
-      const res = await fetch(this.agentUrl + "/chat", { method:"POST", headers:{ "content-type":"application/json" }, body:JSON.stringify({ text, sessionId:sid, page }), signal:this.ctl.signal });
+      const key = await AccountSync.key(); if (!AccountSync.ready) await AccountSync.sync();   // pick up anything changed over iMessage first
+      const res = await fetch(this.agentUrl + "/chat", { method:"POST", headers:{ "content-type":"application/json", authorization:"Bearer " + key }, body:JSON.stringify({ text, sessionId:sid, page, profile: S.profile ? agentProfile(S.profile) : null, profileUpdatedAt: S.profile?.updatedAt || null }), signal:this.ctl.signal });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.reply) throw new Error(data.error || "The agent didn't answer.");
       S.chat.push({ role:"assistant", content:data.reply, acts:[] }); speak(data.reply);
+      if (data.profile && (data.profileUpdatedAt || "") > (S.profile?.updatedAt || "")) applyAgentProfile(data.profile, data.profileUpdatedAt);   // changed by this chat, or over iMessage
     } catch(e) {
       if (e?.name !== "AbortError") S.chat.push({ role:"assistant", local:true, content: e?.message && !/fetch/i.test(e.message) ? e.message : "I can't reach the agent right now. Make sure it's running on the Mac, then try again." });
     }
     S.chatBusy = false; paintMsgs(); paintComposer(); paintNavCounts();
   }
 };
+/* ---------------- Shared profile: this page, the website chat and iMessage ----------------
+   The Wolfie Butler agent keeps one saved profile per student and both channels read and write it. Every change is stamped
+   with the time, and the newer copy wins. The phone number is never part of what is shared with the agent. */
+const agentProfile = p => ({ name:p.name, age:p.age, sex:p.sex, weight:p.weight, weightUnit:p.weightUnit, height:p.height, heightUnit:p.heightUnit, activity:p.activity,
+  diet:p.diet, allergies:p.allergies, targetWeight:p.targetWeight, timeframeWeeks:p.timeframeWeeks });
+const profileSig = p => JSON.stringify(Object.values(agentProfile(p)).map(v => Array.isArray(v) ? v.join("|") : String(v ?? "")));
+
+/* Applies the agent's copy (changed over chat, over iMessage, or elsewhere). A field the agent doesn't know yet arrives as null and leaves the page's own value alone. */
+function applyAgentProfile(ch, stamp){
+  const match = (tokens, options) => options.filter(o => tokens.some(t => new RegExp("\\b" + o.toLowerCase() + "s?\\b").test(String(t).toLowerCase().replace(/-/g, " "))));   // whole words: "shellfish" must not tick "Fish"
+  const before = profileSig(S.profile || EMPTY_PROFILE);
+  const p = { ...EMPTY_PROFILE, ...(S.profile || {}) };
+  for (const k of ["name","age","sex","weight","weightUnit","height","heightUnit","activity","targetWeight","timeframeWeeks"]) if (ch[k] !== undefined && ch[k] !== null) p[k] = ch[k];
+  if (Array.isArray(ch.diet)) p.diet = match(ch.diet, CONFIG.dietOptions);
+  if (Array.isArray(ch.allergies)) p.allergies = match(ch.allergies, CONFIG.allergyOptions);
+  if (stamp) p.updatedAt = stamp;
+  const changed = profileSig(p) !== before;
+  S.profile = p; S.draft = null;
+  Store.savePrivate("profile", p).catch(() => toast("Couldn't save your profile to the cloud. It's kept on this device."));
+  if (changed) { render(); toast("Profile updated from chat"); }
+}
+
+const AccountSync = {
+  _key:null, busy:false, ready:false,
+  /* A random secret that only this browser (or the student's private cloud space) holds. It is how the agent recognises the student. */
+  key(){
+    return this._key ||= (async () => {
+      for (let i = 0; i < 60 && Store.mode === "connecting"; i++) await new Promise(r => setTimeout(r, 50));
+      const saved = await Store.loadPrivate("agentkey");
+      if (saved && /^[A-Za-z0-9_-]{32,128}$/.test(saved.key || "")) return saved.key;
+      const b = crypto.getRandomValues(new Uint8Array(32)), key = btoa(String.fromCharCode(...b)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      await Store.savePrivate("agentkey", { key, createdAt:new Date().toISOString() });
+      return key;
+    })();
+  },
+  async call(path, { method = "GET", body } = {}){
+    const key = await this.key(), ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 8000);
+    try {
+      const res = await fetch(AgentService.agentUrl + path, { method, headers:{ authorization:"Bearer " + key, ...(body ? { "content-type":"application/json" } : {}) }, body: body ? JSON.stringify(body) : undefined, signal:ctl.signal });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw Object.assign(new Error(data.error || "The agent didn't answer."), { status:res.status });
+      return data;
+    } finally { clearTimeout(t); }
+  },
+  /* Keeps the page and the agent in step: whichever copy is newer replaces the other. Quietly does nothing while the agent is unreachable. */
+  async sync(){
+    if (this.busy) return; this.busy = true;
+    try {
+      const server = await this.call("/profile"), local = S.profile, lt = local?.updatedAt || "", st = server.updatedAt || "";
+      if (st && (!lt || st > lt)) applyAgentProfile(server.profile, st);
+      else if (local && !lt && !st) { S.profile = { ...local, updatedAt:new Date().toISOString() }; await Store.savePrivate("profile", S.profile); await this.push(); }
+      else if (local && lt && (!st || lt > st)) await this.push();
+      this.ready = true;
+    } catch {} finally { this.busy = false; }
+  },
+  async push(){
+    if (!S.profile) return;
+    try {
+      const r = await this.call("/profile", { method:"PUT", body:{ profile:agentProfile(S.profile), updatedAt:S.profile.updatedAt } });
+      if (r.source === "server" && (r.updatedAt || "") > (S.profile.updatedAt || "")) applyAgentProfile(r.profile, r.updatedAt);
+    } catch {}
+  },
+  async deleteRemote(){ try { await this.call("/account/delete", { method:"POST" }); } catch {} },
+  async refreshLink(){
+    if (S.link?.code || S.link?.busy) return;
+    try { const st = await this.call("/link/status"); S.link = st.demo ? { demo:st.demo } : st.linked ? { linked:true, last4:st.last4, linkedAt:st.linkedAt } : { line:st.line, available:st.available }; }
+    catch { S.link = { unreachable:true }; }
+    paintLinkPanel();
+  }
+};
+window.addEventListener("focus", () => { AccountSync.sync(); if (S.view === "profile") AccountSync.refreshLink(); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden) AccountSync.sync(); });
+
+/* iMessage linking: the number in the profile only says WHICH number to expect. The student proves it is theirs by texting a
+   one-time code from that number to the Wolfie Butler line. Saving a number alone never turns anything on. */
+function linkPanel(){
+  const L = S.link || {}, saved = normalizePhone(S.profile?.phone);
+  if (L.demo) {   // demo mode: the agent has one preconfigured tester, so this panel only reports the agent's own status
+    const D = L.demo, msg = !D.ready ? `<b>Demo mode: iMessage isn't set up.</b> ${esc(D.problem || "The agent's demo settings are incomplete.")}`
+      : !D.tester ? "<b>Demo mode.</b> iMessage is reserved for the demo tester's profile, so linking is turned off for this account."
+      : !D.connected ? "<b>Demo mode.</b> This profile is the demo tester's, but iMessage isn't connected to the assistant right now."
+      : !D.verified ? "<b>Demo ready.</b> The assistant is set up to answer the registered demo tester's iMessages using this profile. No text from the tester has arrived since the assistant started, so delivery isn't confirmed yet."
+      : `<b>iMessage connected.</b> A text from the demo tester arrived at ${esc(new Date(D.verifiedAt).toLocaleTimeString())} and was answered using this profile. Changes made here or over iMessage show up in both.`;
+    return `<div class="link-box"><p class="small">${msg}</p></div>`;
+  }
+  if (L.linked) return `<div class="link-box"><p class="small"><b>iMessage is linked</b> to the number ending ${esc(L.last4)}. Chats there use this profile, and changes made in either place show up in both.</p><div><button type="button" class="btn" data-act="link-unlink">Unlink iMessage</button></div></div>`;
+  if (L.code) return `<div class="link-box"><p class="small"><b>Send this code by text message</b> (it expires in 10 minutes and works once):</p><div class="link-code" aria-label="Link code">${esc(L.code)}</div><ol class="small" style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px"><li>On the phone with the number ending <b>${esc(L.last4)}</b>, open Messages.</li><li>Start a new message to <b>${esc(L.line)}</b>, the Wolfie Butler iMessage number.</li><li>Send the code as the whole message, with nothing else in it. It only works from your number ending ${esc(L.last4)}.</li></ol><p class="xs muted">This page isn't linked yet. It will say so once the assistant has received your text.</p></div>`;
+  const unavailable = L.unreachable ? "The assistant isn't reachable right now, so linking is unavailable." : L.available === false ? "iMessage isn't switched on for this assistant yet, so it can't be linked." : "";
+  return `<div class="link-box"><p class="small"><b>Not linked.</b> Saving a phone number doesn't turn on iMessage or send you anything. To link it, tap the button for a one-time code, then text that code to the Wolfie Butler iMessage number from the phone number saved here. Linking only completes when the assistant receives your text.</p>${L.error ? `<span class="err" role="alert">${esc(L.error)}</span>` : ""}${unavailable ? `<span class="hint">${unavailable}</span>` : ""}<div><button type="button" class="btn" data-act="link-start" ${saved && !L.busy && !unavailable ? "" : "disabled"}>${L.busy ? "Getting a code…" : "Link iMessage"}</button></div>${saved ? "" : `<span class="hint">Save a valid phone number first.</span>`}</div>`;
+}
+const paintLinkPanel = () => { const el = document.getElementById("link-panel"); if (el) el.innerHTML = linkPanel(); };
+let linkTimer = 0;
+function watchLink(){   // waits for the student's text to arrive, then shows the result
+  clearInterval(linkTimer);
+  linkTimer = setInterval(async () => {
+    if (!S.link?.code || !document.getElementById("link-panel")) return clearInterval(linkTimer);
+    if (Date.parse(S.link.expiresAt) < Date.now()) { S.link = { error:"That code expired. Request a new one." }; paintLinkPanel(); return clearInterval(linkTimer); }
+    try { const st = await AccountSync.call("/link/status"); if (st.linked) { S.link = { linked:true, last4:st.last4, linkedAt:st.linkedAt }; clearInterval(linkTimer); paintLinkPanel(); toast("iMessage linked"); } } catch {}
+  }, 3000);
+}
 function paintComposer(){ wbTouch(); const b = document.querySelector('[data-form="chat"] button[type="submit"]'); if (b) b.disabled = S.chatBusy; const pr = document.querySelector(".prompts"); if (pr && S.chat.length) pr.remove(); }
 
 /* ---------------- Render ---------------- */
+/* Liquid fill behind the Current/Estimated numbers: a 1D spring-mass surface drawn on a canvas, with Wolfie bubbles
+   simmering up through it. The canvas is `fill%` tall plus HEAD px of headroom so waves can rise above the waterline.
+   Bubbles are drawn inside the liquid's own path (ctx.clip), so they can never leave the pink region. */
+const LIQUID = { nodes:30, head:36, tension:0.025, damping:0.025, spread:0.25, passes:8, dt:1000 / 60, vmax:4.5,
+  ambient:1.6,                                        // px of constant, gentle undulation on the surface
+  bubbles:{ perPx:1 / 26, max:22, minDepth:28,        // about one bubble per 26px of liquid depth, at most 22 at once
+    speed:[36, 90],                                   // px/s rise speed (before the size bonus)
+    sizes:[[13, 20, .58], [22, 32, .32], [36, 48, .10]],   // small / medium / occasional large: [min px, max px, share]
+    alpha:[.45, .9], fade:26,                         // opacity range; px below the surface where a bubble starts to fade
+    spawn:[200, 620], group:.2 } };                   // ms between spawn events; chance a spawn is a group of 2-4
+const liquids = new Set();
+let liquidRaf = 0, liquidLast = 0;
+/* One shared, cropped, downscaled copy of the Wolfie PNG (CONFIG.chatIcon) used as every bubble. */
+const wolfie = { sprite:null, ratio:1 };
+if (CONFIG.chatIcon) {
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const P = 96, probe = document.createElement("canvas"); probe.width = probe.height = P;
+      const pc = probe.getContext("2d", { willReadFrequently:true }); pc.drawImage(img, 0, 0, P, P);
+      const d = pc.getImageData(0, 0, P, P).data; let x0 = P, y0 = P, x1 = -1, y1 = -1;
+      for (let y = 0; y < P; y++) for (let x = 0; x < P; x++) if (d[(y * P + x) * 4 + 3] > 12) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+      if (x1 < 0) return;                                           // trim the transparent margin so bubble size = visible mascot size
+      const kx = img.naturalWidth / P, ky = img.naturalHeight / P;
+      const sx = Math.max(0, (x0 - 1) * kx), sy = Math.max(0, (y0 - 1) * ky);
+      const sw = Math.min(img.naturalWidth - sx, (x1 - x0 + 3) * kx), sh = Math.min(img.naturalHeight - sy, (y1 - y0 + 3) * ky);
+      const s = document.createElement("canvas"); s.width = 192; s.height = Math.max(1, Math.round(192 * sh / sw));
+      s.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, s.width, s.height);
+      wolfie.sprite = s; wolfie.ratio = s.height / s.width;
+      liquids.forEach(l => l.wake());
+    } catch {}
+  };
+  img.src = CONFIG.chatIcon;
+}
+function wakeLiquids(){ if (!liquidRaf) { liquidLast = 0; liquidRaf = requestAnimationFrame(liquidFrame); } }
+function liquidFrame(t){
+  liquidRaf = 0;
+  const dt = liquidLast ? Math.min(t - liquidLast, 100) : LIQUID.dt; liquidLast = t;
+  let busy = false;
+  for (const l of liquids) {
+    if (!l.c.isConnected) { l.destroy(); liquids.delete(l); continue; }
+    if (!l.awake) continue;
+    l.tick(dt); l.draw(); busy = busy || l.awake;
+  }
+  if (busy) liquidRaf = requestAnimationFrame(liquidFrame);
+}
+function mountLiquids(){
+  for (const l of liquids) if (!l.c.isConnected) { l.destroy(); liquids.delete(l); }
+  document.querySelectorAll("canvas.nd-fill").forEach(c => { if (!c._liquid) { c._liquid = new Liquid(c); liquids.add(c._liquid); } });
+}
+class Liquid {
+  constructor(canvas){
+    const n = LIQUID.nodes;
+    this.c = canvas; this.ctx = canvas.getContext("2d"); this.color = getComputedStyle(canvas).color;
+    this.y = new Float32Array(n); this.v = new Float32Array(n); this.ld = new Float32Array(n); this.rd = new Float32Array(n); this.sy = new Float32Array(n).fill(LIQUID.head);
+    this.w = 0; this.h = 0; this.dpr = 1; this.acc = 0; this.time = 0; this.awake = false; this.dragging = false; this.last = null;
+    this.bubbles = []; this.spawnIn = 0; this.primed = false; this.visible = true;
+    this.motion = !matchMedia("(prefers-reduced-motion: reduce)").matches;   // reduced motion: a still pink fill, no bubbles
+    this.ro = new ResizeObserver(() => { this.resize(); this.draw(); });
+    this.ro.observe(canvas);
+    this.io = new IntersectionObserver(es => { this.visible = es[es.length - 1].isIntersecting; if (this.visible) this.wake(); });
+    this.io.observe(canvas);                                        // nothing animates while the card is scrolled out of view
+    if (this.motion) this.bind();
+    this.resize(); this.draw(); if (this.motion) this.wake();
+  }
+  destroy(){ this.ro.disconnect(); this.io.disconnect(); }
+  depth(){ return Math.max(0, this.h - LIQUID.head); }
+  resize(){
+    const w = this.c.clientWidth, h = this.c.clientHeight, dpr = window.devicePixelRatio || 1;
+    if (w === this.w && h === this.h && dpr === this.dpr) return;
+    this.w = w; this.h = h; this.dpr = dpr;
+    this.c.width = Math.round(w * dpr); this.c.height = Math.round(h * dpr);   // backing store follows the device pixel ratio
+    if (this.motion && !this.primed && this.depth() >= LIQUID.bubbles.minDepth) {   // start mid-simmer instead of empty
+      this.primed = true;
+      for (let i = 0, n = Math.round(this.target() * .75); i < n; i++) this.bubbles.push(this.makeBubble(true));
+    }
+  }
+  wake(){ this.awake = true; wakeLiquids(); }
+  kick(i, f, sigma){
+    const v = this.v, r = Math.ceil(sigma * 3);
+    for (let j = -r; j <= r; j++) {
+      const k = i + j; if (k < 0 || k >= v.length) continue;
+      v[k] = Math.max(-LIQUID.vmax, Math.min(LIQUID.vmax, v[k] + f * Math.exp(-(j * j) / (2 * sigma * sigma))));
+    }
+    this.wake();
+  }
+  /* ---- bubbles ---- */
+  target(){ const B = LIQUID.bubbles, d = this.depth(); return d < B.minDepth ? 0 : Math.min(B.max, Math.max(2, Math.round(d * B.perPx))); }
+  makeBubble(prefill){
+    const B = LIQUID.bubbles, depth = this.depth(), r = Math.random(), [a, b] = B.sizes[r < .58 ? 0 : r < .9 ? 1 : 2];
+    const size = Math.min(a + Math.random() * (b - a), depth * .45), half = size / 2;
+    return { x:half + Math.random() * Math.max(1, this.w - size), vx:0, size,
+      yb: prefill ? half + Math.random() * Math.max(1, depth - size) : half + Math.random() * depth * .12,   // px above the bottom: new bubbles start low in the liquid
+      speed: B.speed[0] + Math.random() * (B.speed[1] - B.speed[0]) + size * .5,
+      alpha: B.alpha[0] + Math.random() * (B.alpha[1] - B.alpha[0]), age: prefill ? 9 : 0,
+      ph: Math.random() * 6.283, sw: .6 + Math.random() * 1.1, amp: 3 + Math.random() * 9, rot: (5 + Math.random() * 9) * Math.PI / 180 };
+  }
+  spawn(room){
+    const lead = this.makeBubble(false); this.bubbles.push(lead);
+    if (room >= 3 && Math.random() < LIQUID.bubbles.group) {          // now and then a small group rises together
+      for (let i = 1, n = 1 + Math.floor(Math.random() * 3); i < n + 1 && i < room; i++) {
+        const f = this.makeBubble(false);
+        f.size = Math.min(f.size, lead.size * 1.1); f.x = Math.max(f.size / 2, Math.min(this.w - f.size / 2, lead.x + (Math.random() - .5) * 90));
+        f.yb = lead.yb - i * (8 + Math.random() * 16); f.speed = lead.speed * (.9 + Math.random() * .2); this.bubbles.push(f);
+      }
+    }
+  }
+  surfaceAt(x){ const n = this.sy.length, f = Math.max(0, Math.min(n - 1, x / (this.w || 1) * (n - 1))), i = Math.min(n - 2, Math.floor(f)); return this.sy[i] + (this.sy[i + 1] - this.sy[i]) * (f - i); }
+  stepBubbles(dt){
+    const B = LIQUID.bubbles, s = dt / 1000, n = this.y.length;
+    this.spawnIn -= dt;
+    if (this.spawnIn <= 0) {
+      this.spawnIn = B.spawn[0] + Math.random() * (B.spawn[1] - B.spawn[0]);
+      const room = this.target() + 2 - this.bubbles.length; if (room > 0) this.spawn(room);
+    }
+    for (let k = this.bubbles.length - 1; k >= 0; k--) {
+      const b = this.bubbles[k], half = b.size / 2;
+      b.age += s; b.yb += b.speed * s; b.x = Math.max(half, Math.min(this.w - half, b.x + b.vx * s)); b.vx *= Math.exp(-2.2 * s);
+      if (this.h - b.yb - half * .8 <= this.surfaceAt(b.x)) {          // reached the surface: pop, with a tiny ripple
+        this.bubbles.splice(k, 1);
+        const i = Math.round(b.x / (this.w || 1) * (n - 1)); if (i >= 0 && i < n) this.v[i] += .08 + b.size * .003;
+      }
+    }
+  }
+  nudge(px, py, vx, k){                                              // bubbles drift sideways away from a moving pointer
+    for (const b of this.bubbles) {
+      const dx = b.x - px, dy = this.h - b.yb - py, f = Math.exp(-(dx * dx) / (2 * 70 * 70) - (dy * dy) / (2 * 110 * 110));
+      b.vx = Math.max(-60, Math.min(60, b.vx + vx * k * f));
+    }
+  }
+  /* ---- physics ---- */
+  step(){
+    const { tension, damping, spread, passes } = LIQUID, y = this.y, v = this.v, ld = this.ld, rd = this.rd, n = y.length;
+    for (let i = 0; i < n; i++) { v[i] += -tension * y[i] - damping * v[i]; y[i] += v[i]; }   // Hooke's law: F = -k * displacement
+    for (let p = 0; p < passes; p++) {                                                          // spread energy to neighbours
+      for (let i = 0; i < n; i++) {
+        if (i > 0) { ld[i] = spread * (y[i] - y[i - 1]); v[i - 1] += ld[i]; }
+        if (i < n - 1) { rd[i] = spread * (y[i] - y[i + 1]); v[i + 1] += rd[i]; }
+      }
+      for (let i = 0; i < n; i++) { if (i > 0) y[i - 1] += ld[i]; if (i < n - 1) y[i + 1] += rd[i]; }
+    }
+  }
+  tick(dt){
+    this.time += dt;
+    this.acc = Math.min(this.acc + dt, 100);
+    for (let s = 0; this.acc >= LIQUID.dt && s < 6; s++) { this.step(); this.acc -= LIQUID.dt; }
+    const live = this.motion && this.visible && this.depth() > 0;
+    if (live) this.stepBubbles(dt);
+    let e = 0; for (let i = 0; i < this.y.length; i++) e = Math.max(e, Math.abs(this.y[i]), Math.abs(this.v[i]));
+    if (!live && e < 0.015 && !this.dragging) { this.y.fill(0); this.v.fill(0); this.awake = false; }   // settled and nothing to animate: stop
+  }
+  /* ---- drawing ---- */
+  draw(){
+    const { ctx, w, h } = this; if (!w || !h) return;
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+    if (h - LIQUID.head <= 0) return;                                                           // 0% fill: nothing to show
+    const n = this.y.length, dx = w / (n - 1), sy = this.sy, t = this.time, A = this.motion ? LIQUID.ambient : 0;
+    for (let i = 0; i < n; i++) sy[i] = LIQUID.head - this.y[i] + A * (Math.sin(t * .0014 + i * .62) * .65 + Math.sin(t * .0023 - i * .37 + 1.3) * .35);
+    const path = new Path2D(); path.moveTo(0, h); path.lineTo(0, sy[0]);
+    for (let i = 1; i < n; i++) { const x0 = (i - 1) * dx, x1 = i * dx, y0 = sy[i - 1], y1 = sy[i]; path.quadraticCurveTo(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2); }
+    path.lineTo(w, sy[n - 1]); path.lineTo(w, h); path.closePath();
+    ctx.fillStyle = this.color; ctx.fill(path);
+    if (this.bubbles.length) this.drawBubbles(path);
+  }
+  drawBubbles(path){
+    const { ctx, dpr } = this, S = wolfie.sprite, fadeZone = LIQUID.bubbles.fade;
+    ctx.save(); ctx.clip(path);                                      // bubbles only ever show inside the liquid
+    for (const b of this.bubbles) {
+      const x = b.x + Math.sin(this.time * .001 * b.sw + b.ph) * b.amp, y = this.h - b.yb;
+      const fade = Math.min(1, b.age / .6, Math.max(0, (y - b.size * .5 - this.surfaceAt(x)) / fadeZone));
+      if (fade <= 0) continue;
+      const rot = Math.sin(this.time * .0008 * b.sw + b.ph * 2) * b.rot, c = Math.cos(rot), s = Math.sin(rot), bw = b.size, bh = S ? bw * wolfie.ratio : bw;
+      ctx.globalAlpha = b.alpha * fade; ctx.setTransform(dpr * c, dpr * s, -dpr * s, dpr * c, dpr * x, dpr * y);
+      if (S) ctx.drawImage(S, -bw / 2, -bh / 2, bw, bh);
+      else { ctx.beginPath(); ctx.arc(0, 0, bw / 2, 0, 6.283); ctx.fillStyle = "rgba(255,255,255,.55)"; ctx.fill(); }   // fallback until the image loads
+    }
+    ctx.restore();
+  }
+  bind(){
+    const c = this.c, n = LIQUID.nodes;
+    const at = e => { const r = c.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+    const node = x => Math.max(0, Math.min(n - 1, Math.round(x / (this.w || 1) * (n - 1))));
+    const surfaceAt = i => LIQUID.head - this.y[i];
+    c.addEventListener("pointermove", e => {
+      const p = at(e), i = node(p.x), sy = surfaceAt(i), prev = this.last;
+      this.last = { x:p.x, y:p.y, t:e.timeStamp, above:p.y < sy };
+      if (!prev) return;
+      const vx = Math.max(-40, Math.min(40, (p.x - prev.x) / Math.max(e.timeStamp - prev.t, 8) * 16.7));   // px per frame
+      this.nudge(p.x, p.y, vx, this.dragging ? 3 : 1.2);
+      if (this.dragging) {                                              // heavy wake: dip under the pointer, crest left behind it
+        const dir = Math.sign(vx) || 1;
+        this.kick(i, -0.2 * Math.abs(vx), 2);
+        this.kick(i - dir * 4, 0.12 * Math.abs(vx), 2.5);
+      } else if (prev.above !== this.last.above) {                      // crossed the surface: light ripple from the entry velocity
+        this.kick(i, vx * 0.5 + (prev.above ? -1.8 : 0.9), 2);
+      }
+    });
+    c.addEventListener("pointerdown", e => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      this.dragging = true; try { c.setPointerCapture(e.pointerId); } catch {}
+      const p = at(e); this.last = { x:p.x, y:p.y, t:e.timeStamp, above:p.y < surfaceAt(node(p.x)) };
+      this.kick(node(p.x), -4.5, 2.2);                                  // pebble: sharp downward slap at the click
+    });
+    const release = e => { this.dragging = false; this.last = null; try { c.releasePointerCapture(e.pointerId); } catch {} };
+    c.addEventListener("pointerup", release); c.addEventListener("pointercancel", release);
+    c.addEventListener("pointerleave", () => { if (!this.dragging) this.last = null; });
+    c.addEventListener("mousedown", e => e.preventDefault());           // no link drag / text selection while dragging through the water
+    c.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); });   // the water is for splashing; the card still opens from the rest of its surface and from the keyboard
+  }
+}
 function render(){
   document.getElementById("view").innerHTML = VIEWS[S.view]();
+  mountLiquids();
+  if (S.view === "profile") AccountSync.refreshLink();
   if (S.view === "menus") { paintFoodGrid(); paintSideList(); paintMealBar(); }
 
   paintSaveState();
@@ -1480,7 +1776,6 @@ document.addEventListener("click", async e => {
     case "open-hall": S.hall = a.dataset.hall; S.station = "All"; go("menus"); break;
     case "pick-date": e.preventDefault(); S.date = a.dataset.date; render(); break;
     case "station": S.station = a.dataset.station; document.querySelectorAll('[data-act="station"]').forEach(c => c.setAttribute("aria-pressed", c.dataset.station === S.station)); paintFoodGrid(); break;
-    case "import": importModal(); break;
     case "period": S.period = a.dataset.p; S.recs = null; render(); break;
     case "rectab": S.recTab = a.dataset.p; render(); break;
     case "noop": break;
@@ -1506,8 +1801,24 @@ document.addEventListener("click", async e => {
     case "add-day": { const dp = S.dayPlan; if (!dp?.picks) break; const ps = a.dataset.p === "all" ? PERIODS : [a.dataset.p]; let n = 0;
       ps.forEach(p => (dp.picks[p] || []).forEach(x => { MealPlanService.add(S.plan, x.food, S.hall, S.date, x.servings, p); n += x.servings; }));
       if (!n) break; persistPlan(); render(); paintNavCounts(); toast(`Added ${n} dish${n>1?"es":""} · ${planCount()} selected`); break; }
-    case "wb-open": openWidget(); setTimeout(() => document.getElementById("chat-in")?.focus(), 650); break;
-    case "wb-close": closeWidget(); break;
+    case "wb-open": openWidget(); setTimeout(() => document.getElementById("chat-in")?.focus(), 260); break;
+    case "link-start": {
+      const phone = normalizePhone(S.profile?.phone); if (!phone) break;
+      S.link = { ...(S.link || {}), busy:true, error:"" }; paintLinkPanel();
+      try { const r = await AccountSync.call("/link/start", { method:"POST", body:{ phone } }); S.link = { code:r.code, expiresAt:r.expiresAt, last4:r.last4, line:r.line }; watchLink(); }
+      catch (e) { S.link = { error: e.status ? e.message : "Couldn't reach the Wolfie Butler agent. Make sure it's running, then try again." }; }
+      paintLinkPanel(); break; }
+    case "link-unlink": {
+      try { await AccountSync.call("/link/remove", { method:"POST" }); toast("iMessage unlinked"); } catch { toast("Couldn't unlink right now. Try again in a moment."); }
+      S.link = {}; await AccountSync.refreshLink(); break; }   // show what the agent says now, not what we expect
+    case "wb-close": S.wbPinned = false; wbSuppress = true; closeWidget(); break;
+    case "wb-pin": {
+      S.wbPinned = !S.wbPinned; clearTimeout(wbLeaveT);
+      a.setAttribute("aria-pressed", S.wbPinned);
+      a.setAttribute("title", S.wbPinned ? "Unpin chat (it closes when the cursor leaves)" : "Pin chat open");
+      a.setAttribute("aria-label", S.wbPinned ? "Unpin chat" : "Pin chat open");
+      if (!S.wbPinned && !wbHover) wbLeaveT = setTimeout(closeWidget, 350);
+      break; }
     case "voice": S.voice = !S.voice; a.setAttribute("aria-pressed", S.voice); a.title = S.voice ? "Voice replies on" : "Read replies aloud"; if (!S.voice) { try { speechSynthesis.cancel(); } catch {} } else speak("Voice replies are on."); toast(S.voice ? "Wolfie Butler will read replies aloud" : "Voice replies off"); break;
     case "plan-food": { const it = S.plan.items.find(i => i.key === a.dataset.key); if (it) foodDrawer({ id:it.foodId, name:it.name, station:it.station, serving:it.serving, nutr:it.nutr, labels:it.labels||[], allergens:it.allergens||[], desc:"" }, true); break; }
     case "dq": { const o = document.getElementById("dq"), n = Math.max(1, (+o.textContent) + (+a.dataset.d)); o.textContent = n; break; }
@@ -1528,16 +1839,14 @@ document.addEventListener("click", async e => {
     case "recipe-back": S.recipeOpen = null; render(); break; 
     case "new-recipe": recipeModal(); break;
     case "prompt": AgentService.send(a.dataset.p); break;
-    case "copy-brief": { const t = PhotonBridge.brief(); try { await navigator.clipboard.writeText(t); toast("Agent brief copied"); } catch { const pre = document.getElementById("brief-pre"); pre.closest("details").open = true; const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Selected. Press Ctrl+C or ⌘C to copy"); } break; }
     case "pf-chip": { S.draft = readProfileForm(); const g = a.dataset.group, v = a.dataset.v, arr = new Set(S.draft[g] || []); arr.has(v) ? arr.delete(v) : arr.add(v); S.draft[g] = [...arr]; a.setAttribute("aria-pressed", arr.has(v)); break; }
     case "pf-mode": { S.draft = readProfileForm(); S.draft.targetMode = a.dataset.v; document.querySelectorAll('[data-act="pf-mode"]').forEach(b => b.setAttribute("aria-pressed", b.dataset.v === a.dataset.v)); document.getElementById("custom-targets").hidden = a.dataset.v !== "custom"; document.getElementById("ct-note").hidden = a.dataset.v !== "custom"; refreshProfileSide(S.draft); break; }
-    case "skip-profile": { const p = readProfileForm(); S.profile = { ...p }; S.draft = null; await Store.savePrivate("profile", S.profile); go("overview"); break; }
+    case "skip-profile": { const p = readProfileForm(); S.profile = { ...p, phone: normalizePhone(p.phone) || "", updatedAt: new Date().toISOString() }; S.draft = null; await Store.savePrivate("profile", S.profile); AccountSync.push(); go("overview"); break; }
     case "reset": S.confirm = "reset"; render(); break;
-    case "reset-yes": { S.profile = null; S.plan = { items:[] }; S.draft = null; S.confirm = null; S.chat = [];
+    case "reset-yes": { S.profile = null; S.plan = { items:[] }; S.draft = null; S.confirm = null; S.chat = []; S.link = {}; AccountSync.deleteRemote();
       try { if (Store.db && Store.uid) { await Store.db.doc(Store.userDoc("profile")).delete(); await Store.db.doc(Store.userDoc("mealplan")).delete(); } } catch {}
       try { localStorage.removeItem("np.profile"); localStorage.removeItem("np.mealplan"); } catch {}
       paintNav(); render(); toast("Your data was deleted"); break; }
-    case "do-import": await doImport(); break;
   }
 });
 document.addEventListener("change", e => {
@@ -1548,12 +1857,36 @@ document.addEventListener("change", e => {
   if (t.dataset.ms === "label") { const set = new Set(S.labels); t.checked ? set.add(t.value) : set.delete(t.value); S.labels = [...set]; const tx = document.getElementById("ms-labels-txt"); if (tx) tx.textContent = msText(); paintFoodGrid(); }
   if (t.id === "use-favs") { S.useFavs = t.checked; render(); }
   if (t.dataset.upload && t.files && t.files[0]) uploadImage(t);
-  if (t.id === "im-hall" || t.id === "im-date") { const h = document.getElementById("im-hall").value, d = document.getElementById("im-date").value || S.date; const l = document.getElementById("im-link"); l.href = nutrisliceUrl(h, d); l.firstChild.textContent = `Open the ${CONFIG.halls[h].short} menu API `; }
-  if (t.id === "im-file" && t.files[0]) { const r = new FileReader(); r.onload = () => { document.getElementById("im-json").value = r.result; }; r.readAsText(t.files[0]); }
   if (t.closest("#profile-form")) { S.draft = { ...readProfileForm(), diet:S.draft?.diet ?? S.profile?.diet ?? [], allergies:S.draft?.allergies ?? S.profile?.allergies ?? [], targetMode:S.draft?.targetMode ?? S.profile?.targetMode ?? "estimated" }; refreshProfileSide(S.draft); }
 });
 ["pointermove","keydown","focusin","input","pointerdown"].forEach(ev => document.addEventListener(ev, e => { if (e.target.closest?.("#wolfie")) wbTouch(); }, true));
-document.addEventListener("mouseover", e => { if (e.target.closest?.(".wb-fab") && !S.chatOpen) openWidget(); });
+document.addEventListener("mouseover", e => { if (e.target.closest?.(".wb-fab") && !S.chatOpen && !wbSuppress && !wbClosing) openWidget(); });
+/* Hover the launcher to open; leaving the whole widget closes it after a short delay unless pinned. */
+const wolfieEl = document.getElementById("wolfie");
+wolfieEl.addEventListener("mouseenter", () => { wbHover = true; clearTimeout(wbLeaveT); });
+wolfieEl.addEventListener("mouseleave", () => {
+  wbHover = false; wbSuppress = false; clearTimeout(wbLeaveT);
+  if (!S.chatOpen || S.wbPinned) return;
+  wbLeaveT = setTimeout(() => {
+    const draft = document.getElementById("chat-in")?.value.trim();
+    if (!wbHover && !S.wbPinned && !S.chatBusy && !draft) closeWidget();
+  }, 350);
+});
+/* Left rail: icon-only until hovered or focused; retracts after a pause and reappears on hover. */
+(() => {
+  const rail = document.querySelector(".rail"); if (!rail) return;
+  const IDLE_MS = 4000, LEAVE_MS = 220;
+  let idleT = 0, leaveT = 0;
+  const arm = () => { clearTimeout(idleT); idleT = setTimeout(() => rail.classList.remove("open"), IDLE_MS); };
+  const open = () => { clearTimeout(leaveT); rail.classList.add("open"); arm(); };
+  const closeSoon = () => { clearTimeout(leaveT); leaveT = setTimeout(() => { clearTimeout(idleT); rail.classList.remove("open"); }, LEAVE_MS); };
+  rail.addEventListener("pointerenter", open);
+  rail.addEventListener("pointermove", open);
+  rail.addEventListener("pointerleave", e => { if (e.pointerType !== "touch") closeSoon(); });
+  rail.addEventListener("focusin", open);
+  rail.addEventListener("focusout", e => { if (!rail.contains(e.relatedTarget)) closeSoon(); });
+  rail.addEventListener("keydown", e => { if (e.key === "Escape") { clearTimeout(idleT); rail.classList.remove("open"); } });
+})();
 document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches?.("article.hall")) { e.preventDefault(); S.hall = e.target.dataset.hall; go("menus"); } });
 document.addEventListener("input", e => {
   const t = e.target;
@@ -1568,25 +1901,21 @@ document.addEventListener("submit", async e => {
     const p = { ...readProfileForm(), diet:S.draft?.diet ?? S.profile?.diet ?? [], allergies:S.draft?.allergies ?? S.profile?.allergies ?? [], targetMode:S.draft?.targetMode ?? S.profile?.targetMode ?? "estimated" };
     const v = NutritionService.validate(p); S.profileErrors = v.errors;
     if (!v.ok) { S.draft = p; render(); document.querySelector(".input.bad")?.focus(); return; }
+    const prevPhone = S.profile?.phone || "";
+    p.phone = normalizePhone(p.phone) || ""; p.updatedAt = new Date().toISOString();   // saved in one standard format; the timestamp lets the agent keep the newer copy
     S.profile = p; S.draft = null;
     try { await Store.savePrivate("profile", p); toast("Profile saved"); } catch { toast("Couldn't save to the cloud. It's kept on this device."); }
+    if (prevPhone && prevPhone !== p.phone) { S.link = {}; AccountSync.call("/link/remove", { method:"POST" }).then(() => toast("Phone number changed, so iMessage was unlinked. Link it again to use the new number."), () => toast("Couldn't unlink the old number just now. Open your profile to check iMessage.")); }   // a changed or cleared number must not stay linked
+    AccountSync.push();
     go("overview");
   }
-  if (f.dataset.form === "medal") {
-    const url = f.url.value.trim(), err = document.getElementById("medal-err"), r = S.recipes.find(x => x._id === f.dataset.id);
-    if (url && !MedalProvider.parse(url)) { err.textContent = "Use a link that starts with https://medal.tv/"; return; }
-    err.textContent = "";
-    try { const { _id, ...body } = r; await Store.saveShared("recipes", r._id, { ...body, medalUrl: url || null, updatedAt:new Date().toISOString() }); toast(url ? "Medal clip saved" : "Clip removed"); }
-    catch { err.textContent = "Couldn't save. You may only have view access to this app."; }
-  }
   if (f.dataset.form === "recipe") {
-    const fd = new FormData(f), title = (fd.get("title")||"").trim(), medal = (fd.get("medal")||"").trim(), err = document.getElementById("rc-err");
+    const fd = new FormData(f), title = (fd.get("title")||"").trim(), err = document.getElementById("rc-err");
     if (!title) { err.textContent = "Give the recipe a title."; return; }
-    if (medal && !MedalProvider.parse(medal)) { err.textContent = "The clip link must start with https://medal.tv/"; return; }
     const lines = k => String(fd.get(k)||"").split("\n").map(s=>s.trim()).filter(Boolean);
     const id = "r-" + Date.now().toString(36);
     const body = { title, description:(fd.get("description")||"").trim(), prepMinutes:Math.max(1, parseInt(fd.get("prep"))||15), labels:String(fd.get("labels")||"").split(",").map(s=>s.trim()).filter(Boolean),
-      ingredients:lines("ingredients"), steps:lines("steps"), medalUrl:medal||null, thumbId:null, nutrition:null, createdAt:new Date().toISOString(), source:"Added by a Wolfie Butler user" };
+      ingredients:lines("ingredients"), steps:lines("steps"), thumbId:null, nutrition:null, createdAt:new Date().toISOString(), source:"Added by a Wolfie Butler user" };
     const file = fd.get("thumb");
     if (file && file.size && Store.assets) { try { body.thumbId = (await Store.assets.upload(file)).id; } catch(e) { err.textContent = "The thumbnail didn't upload, so the recipe will use the illustrated thumbnail. " ; } }
     try { await Store.saveShared("recipes", id, body); closeOverlay(); toast("Recipe saved"); } catch { err.textContent = "Couldn't save. You may only have view access to this app."; }
@@ -1608,10 +1937,6 @@ async function uploadImage(input){
   toast("Uploading…");
   try {
     const { id } = await Store.assets.upload(file);
-    if (input.dataset.upload === "mascot") {
-      const cfg = { ...(S.site || {}) }; delete cfg._id; cfg.mascotId = id;
-      await Store.saveShared("site", "config", cfg); S.site = { ...cfg, _id:"config" }; paintWidget(); toast("Icon saved"); return;
-    }
     if (input.dataset.upload === "hall") {
       const cfg = { ...(S.site || {}) }; delete cfg._id; cfg.hallImages = { ...(cfg.hallImages || {}), [input.dataset.hall]: id };
       await Store.saveShared("site", "config", cfg); S.site = { ...cfg, _id:"config" };
@@ -1622,20 +1947,6 @@ async function uploadImage(input){
     toast("Photo saved"); render();
   } catch(e) { toast(e?.code === "too_large" ? "That image is too large. Use one under 20 MB." : e?.code === "unsupported_type" ? "Use a PNG, JPEG or WebP image." : "The photo didn't upload. Try again."); }
 }
-async function doImport(){
-  const msg = document.getElementById("im-msg"), hall = document.getElementById("im-hall").value, raw = document.getElementById("im-json").value;
-  if (!raw.trim()) { msg.innerHTML = `<span class="err">Paste the menu JSON first.</span>`; return; }
-  let days; try { days = MenuProvider.parse(raw, hall); } catch(err) { msg.innerHTML = `<span class="err">${esc(err.message)}</span>`; return; }
-  msg.textContent = `Saving ${days.length} day${days.length>1?"s":""}…`;
-  const srcDate = days[0].date;
-  try {
-    for (const d of days) await Store.saveShared("menus", menuKey(hall, d.date), { ...d, importedAt:new Date().toISOString(), source:"Nutrislice", sourceUrl:nutrisliceUrl(hall, srcDate) });
-    days.forEach(d => { S.menus[menuKey(hall,d.date)] = { ...d, importedAt:new Date().toISOString() }; });
-    closeOverlay(); S.hall = hall; if (!S.menus[menuKey(hall,S.date)]) S.date = days.find(d => d.date >= todayISO())?.date || days[0].date;
-    toast(`Imported ${days.reduce((a,d)=>a+d.items.length,0)} dishes across ${days.length} day${days.length>1?"s":""}`); render();
-  } catch(err) { msg.innerHTML = `<span class="err">${esc(err?.code === "invalid_argument" ? "You don't have permission to save menus to this app. Ask the owner for Contributor access." : err?.code === "quota_exceeded" ? "The cloud database is full. Delete old menus and try again." : "Couldn't save to the cloud. Try again in a moment.")}</span>`; }
-}
-
 /* ---------------- Boot ---------------- */
 function migratePlan(items){
   const out = [];
@@ -1656,6 +1967,7 @@ function migratePlan(items){
     const [prof, plan, favs] = await Promise.all([Store.loadPrivate("profile"), Store.loadPrivate("mealplan"), Store.loadPrivate("favorites")]);
     if (favs && Array.isArray(favs.items)) S.favs = Object.fromEntries(favs.items.filter(f => f && f.foodId).map(f => [f.foodId, f]));
     if (prof && typeof prof === "object") S.profile = { ...EMPTY_PROFILE, ...prof };
+    AccountSync.sync();   // best effort: pick up changes made over iMessage, and share this profile with the agent
     if (plan && Array.isArray(plan.items)) { S.plan = { items: migratePlan(plan.items) }; if (plan.context && CONFIG.halls[plan.context.hall]) S.hall = plan.context.hall; }
   } catch {}
   Store.watch("menus", docs => { S.menus = {}; docs.forEach(d => { if (d && d.hall && d.date && Array.isArray(d.items)) S.menus[menuKey(d.hall,d.date)] = d; });
