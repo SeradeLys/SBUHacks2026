@@ -240,6 +240,31 @@ textarea.input{min-height:120px;resize:vertical;font-size:13px;font-family:ui-mo
 .rcard .art{height:140px}
 .steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px}
 .ing{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+/* recipe galleries: independent horizontal scrollers with edge fades and arrows as scroll cues */
+.rsec{display:flex;flex-direction:column;gap:14px;min-width:0}
+.rsec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.rsec-head p{color:var(--muted);font-size:14.5px;margin-top:4px}
+.rsec-acts{display:flex;align-items:center;gap:8px}
+.rscroll{position:relative;min-width:0}
+.rscroll::before,.rscroll::after{content:"";position:absolute;top:0;bottom:0;width:44px;z-index:2;pointer-events:none;opacity:0;transition:opacity var(--t) var(--ease)}
+.rscroll::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
+.rscroll::after{right:0;background:linear-gradient(270deg,var(--bg),transparent)}
+.rscroll.can-l::before,.rscroll.can-r::after{opacity:1}
+.rrow{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x proximity;scroll-padding-left:4px;overscroll-behavior-x:contain;padding:8px 4px 16px;margin:-8px -4px -4px;scrollbar-width:thin}
+.rrow.wrap{flex-wrap:wrap;overflow-x:visible}
+.rtile{flex:0 0 clamp(220px,72vw,264px);position:relative;scroll-snap-align:start;display:flex}
+.rtile .rcard{width:100%}
+.rtile .rcard h3{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.5em;line-height:1.25}
+.rtile .rcard .rdesc{min-height:2.7em}
+.rdel{position:absolute;top:20px;right:20px;width:34px;height:34px;border-radius:50%;background:var(--surface);color:var(--err);box-shadow:var(--e-2);z-index:1}
+.rdel:hover{background:var(--err-tint)}
+.rarrow:disabled{opacity:.4;cursor:default}
+.rtile.skel{min-height:268px;border-radius:var(--r);background:var(--surface-2)}
+@media (prefers-reduced-motion:no-preference){.rtile.skel{animation:rpulse 1.3s ease-in-out infinite}@keyframes rpulse{50%{opacity:.55}}}
+@media (hover:none),(max-width:767px){.rarrow{display:none}}
+.ing-row{display:grid;grid-template-columns:72px 100px minmax(0,1fr) 40px;gap:8px;align-items:center}
+.ing-row .input{min-height:42px}
+@media (max-width:520px){.ing-row{grid-template-columns:72px minmax(0,1fr) 40px}.ing-row [name="ing-name"]{grid-column:1/3;grid-row:2}}
 
 /* assistant */
 .agent{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
@@ -253,6 +278,18 @@ textarea.input{min-height:120px;resize:vertical;font-size:13px;font-family:ui-mo
 .msg.bot{align-self:flex-start;background:var(--surface-2);border-bottom-left-radius:6px}
 .msg.bot ul{margin:6px 0;padding-left:18px}
 .msg .act{display:block;font-size:12px;color:var(--muted);margin-top:6px}
+/* voice: per-reply playback controls, microphone button and its status line */
+.vc{display:flex;align-items:center;gap:6px;margin-top:6px;min-height:30px}
+.vbtn{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--line-2);background:var(--surface);color:var(--fg);cursor:pointer;padding:0}
+.vbtn:hover{background:var(--surface-3)}
+.vbtn svg{width:15px;height:15px}
+.vmsg{font-size:12px;color:var(--muted)}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--line-2);border-top-color:var(--brand);display:block}
+.stt-bar{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:0 12px;padding:8px 12px;border-radius:12px;background:var(--surface-2);font-size:13px}
+.stt-bar.bad{background:var(--err-tint);color:var(--err)}
+.recdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--err);margin-right:8px}
+.iconbtn.mic.rec{background:var(--err);border-color:var(--err);color:#fff}
+@media (prefers-reduced-motion:no-preference){.spin{animation:vspin .8s linear infinite}.recdot{animation:vpulse 1.1s ease-in-out infinite}@keyframes vspin{to{transform:rotate(360deg)}}@keyframes vpulse{50%{opacity:.35}}}
 .composer{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
 .composer .input{border-radius:99px}
 .composer .btn{border-radius:99px}
@@ -803,6 +840,13 @@ const ICONS = {
   search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  pause:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>',
+  stop:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg>',
+  chevL:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+  chevR:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
   alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>',
   info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
   upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>',
@@ -841,9 +885,9 @@ const Store = {
     lsSet("np."+name, body);
     const p = this.userDoc(name); if (this.db && p) return this.write(p, body);
   },
-  watch(coll, cb){
+  watch(coll, cb, onErr){
     if (!this.db) { cb((lsGet("np.c."+coll) || [])); return () => {}; }
-    return this.db.collection(coll).onSnapshot(snap => cb(snap.docs.map(d => ({ _id:d.id, ...d.data() }))), e => { console.warn(coll, e); setCloud("warn", "Cloud sync paused"); });
+    return this.db.collection(coll).onSnapshot(snap => cb(snap.docs.map(d => ({ _id:d.id, ...d.data() }))), e => { console.warn(coll, e); setCloud("warn", "Cloud sync paused"); if (onErr) onErr(e); });
   },
   async saveShared(coll, id, body){
     if (!this.db) { const arr = (lsGet("np.c."+coll) || []).filter(x => x._id !== id); arr.push({ _id:id, ...body }); lsSet("np.c."+coll, arr); return; }
@@ -859,7 +903,7 @@ const Store = {
 const EMPTY_PROFILE = { name:"", age:"", sex:"", weight:"", weightUnit:"lb", height:"", heightUnit:"in", activity:"", goal:"", diet:[], allergies:[], targetMode:"estimated", custom:{cal:"",protein:"",carbs:"",fat:"",fiber:""}, targetWeight:"", timeframeWeeks:"", rapidChange:false, phone:"", updatedAt:"" };
 const S = {
   view:"overview", hall:"west", site:{}, recTab:null, date:todayISO(), menus:{}, recipes:[], profile:null, plan:{ items:[] }, saveState:"idle",
-  q:"", station:"All", labels:[], period:"Any", favs:{}, adding:null, useFavs:true, seed:0, chatOpen:true, voice:false, recs:null, recipeQ:"", recipeCats:[], recipeOpen:null, chat:[], chatBusy:false, profileErrors:{}, confirm:null
+  q:"", station:"All", labels:[], period:"Any", favs:{}, adding:null, useFavs:true, seed:0, chatOpen:true, voice:false, recs:null, recipeQ:"", recipeCats:[], recipeOpen:null, userDocs:{}, community:[], recLoaded:{}, recErr:{}, names:{}, exploreAll:false, chat:[], chatBusy:false, profileErrors:{}, confirm:null
 };
 const menuKey = (h,d) => `${h}--${d}`;
 const currentMenu = () => S.menus[menuKey(S.hall, S.date)] || null;
@@ -945,8 +989,11 @@ function conflictsOf(f){
 }
 const HEART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.5 1.1 5 3 1.5-1.9 3-3 5-3 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z"/></svg>';
 const isFav = id => !!S.favs[id];
+/* a recipe's cover can be the thumbnail of its source video; only YouTube's own thumbnail URL for that video is accepted, and the card keeps its illustrated placeholder if it fails to load */
+const ytThumb = r => /^https:\/\/img\.youtube\.com\/vi\/[\w-]{11}\/hqdefault\.jpg$/.test(r.thumbUrl || "") ? r.thumbUrl : "";
+const ytWatch = r => /^https:\/\/www\.youtube\.com\/watch\?v=[\w-]{11}$/.test(r.sourceUrl || "") ? r.sourceUrl : "";
 function recipeMedia(r, cls="thumb"){
-  return `<div class="photo ${cls}"><div class="art" style="--h:${hueOf(r.title)};position:absolute;inset:0;border-radius:0" aria-hidden="true"><span class="plate"></span><span class="glyph">${esc(initials(r.title))}</span></div>${r.thumbId ? `<img src="/_blob/${esc(r.thumbId)}" alt="" style="position:absolute;inset:0" onerror="this.remove()">` : ""}</div>`;
+  return `<div class="photo ${cls}"><div class="art" style="--h:${hueOf(r.title)};position:absolute;inset:0;border-radius:0" aria-hidden="true"><span class="plate"></span><span class="glyph">${esc(initials(r.title))}</span></div>${r.thumbId ? `<img src="/_blob/${esc(r.thumbId)}" alt="" style="position:absolute;inset:0" onerror="this.remove()">` : ytThumb(r) ? `<img src="${esc(ytThumb(r))}" alt="" loading="lazy" referrerpolicy="no-referrer" style="position:absolute;inset:0" onerror="this.remove()">` : ""}</div>`;
 }
 function inMealCount(foodId){ return S.plan.items.filter(i => i.foodId === foodId && i.hall === S.hall && i.date === S.date).reduce((a,b)=>a+b.servings,0); }
 const timePeriod = () => { const h = new Date().getHours(); return h < 11 ? "Breakfast" : h < 16 ? "Lunch" : "Dinner"; };
@@ -1177,59 +1224,168 @@ function calorieOverview(t, why){
     <div class="nd-side">${macro("carbs","Carbs")}${macro("protein","Protein")}${macro("fiber","Fiber")}${macro("fat","Fat")}</div>
   </section>`;
 }
-/* recipes */
-function recipeCard(r){
-  return `<button class="rcard" data-act="recipe" data-id="${esc(r._id)}"><div style="position:relative">${recipeMedia(r)}</div>
-    <h3>${esc(r.title)}</h3><p class="small muted" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(r.description)}</p>
-    <div class="chips" style="gap:5px"><span class="tag">${esc(r.prepMinutes)} min</span>${(r.labels||[]).slice(0,2).map(l=>`<span class="tag">${esc(l)}</span>`).join("")}</div>
-    <span class="xs muted num">${NutritionService.isNum(r.nutrition?.cal) ? `${fmt(r.nutrition.cal)} kcal per serving` : "Nutrition not calculated"}</span></button>`;
+/* recipes: "Your Recipes" (owned, stored in userRecipes/<uid>) + "Discover Recipes" (curated `recipes` + everyone's public userRecipes) */
+const MEAL_CATS = ["Breakfast","Lunch","Dinner","Snack","Dessert","Drink"];
+const UNITS = ["","tsp","tbsp","cup","oz","lb","g","kg","ml","l","piece","clove","slice","pinch"];
+const MAX_USER_RECIPES = 50;   // every recipe a person adds lives in one document, so keep it comfortably small
+function deviceUid(){ let id = lsGet("np.localuid"); if (!id) { id = "local-" + (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)); lsSet("np.localuid", id); } return id; }
+const ownerId = () => Store.uid || (Store.db ? null : deviceUid());   // signed in to the cloud without an id means no ownership, so no adding
+const isMine = r => !!r.ownerId && r.ownerId === ownerId();
+const ingText = i => typeof i === "string" ? i : [i && i.qty, i && i.unit, i && i.name].filter(x => x !== "" && x != null).join(" ");
+const mealCat = r => r.category || (r.labels || []).find(l => MEAL_CATS.includes(l)) || (r.labels || [])[0] || "";
+const totalMin = r => (+r.prepMinutes || 0) + (+r.cookMinutes || 0);
+const findRecipe = id => S.recipes.find(r => r._id === id) || S.community.find(r => r._id === id);
+function creatorOf(r){ return isMine(r) ? "You" : r.ownerId ? (S.names[r.ownerId] || "A community member") : (r.source || "Curated"); }
+function rebuildCommunity(){   // ownerId always comes from the document id the rules protect, never from a field a client could have written
+  S.community = Object.entries(S.userDocs).flatMap(([uid, items]) => items.filter(it => it && it.id && it.title).map(it => ({ ...it, _id:uid + "/" + it.id, ownerId:uid })));
 }
-function mediaBlock(r, big){
-  return recipeMedia(r, "").replace('class="photo "','class="photo " style="aspect-ratio:16/9;border-radius:var(--r-lg)"');
+async function resolveNames(){
+  const ids = [...new Set(S.community.map(r => r.ownerId))].filter(id => id !== ownerId() && !(id in S.names));
+  if (!ids.length || !Store.user || !Store.user.profiles) return;
+  try { const ps = await Store.user.profiles(ids); ids.forEach(id => { S.names[id] = (ps[id] && ps[id].name) || ""; }); if (S.view === "recipes" && !document.querySelector(".scrim")) render(); } catch {}
+}
+function recipeLists(){
+  const me = ownerId(), q = S.recipeQ.trim().toLowerCase(), seen = new Set(), mine = [], disc = [];
+  const match = r => S.recipeCats.every(c => (r.labels || []).includes(c) || mealCat(r) === c) && (!q || [r.title, r.description, ...(r.ingredients || []).map(ingText)].join(" ").toLowerCase().includes(q));
+  const byNew = (a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+  [...S.community, ...S.recipes].forEach(r => {
+    if (seen.has(r._id)) return; seen.add(r._id);
+    if (me && r.ownerId === me) mine.push(r);                                   // your own recipes only ever appear in Your Recipes
+    else if (!r.ownerId || r.visibility === "public") disc.push(r);             // curated, or shared by someone else
+  });
+  const curated = disc.filter(r => !r.ownerId), shared = disc.filter(r => r.ownerId).sort(byNew);
+  return { mine:mine.sort(byNew).filter(match), disc:[...curated, ...shared].filter(match) };
+}
+function recipeCard(r){
+  const cat = mealCat(r), mins = totalMin(r);
+  return `<button class="rcard" data-act="recipe" data-id="${esc(r._id)}"><div style="position:relative">${recipeMedia(r)}</div>
+    <h3>${esc(r.title)}</h3><p class="small muted rdesc" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(r.description)}</p>
+    <div class="chips" style="gap:5px">${mins ? `<span class="tag">${esc(mins)} min</span>` : ""}${cat ? `<span class="tag">${esc(cat)}</span>` : ""}${(r.labels || []).filter(l => l !== cat).slice(0, 1).map(l => `<span class="tag">${esc(l)}</span>`).join("")}${r.servings ? `<span class="tag">Serves ${esc(r.servings)}</span>` : ""}</div>
+    <span class="xs muted num">${NutritionService.isNum(r.nutrition?.cal) ? `${fmt(r.nutrition.cal)} kcal per serving` : "Nutrition not calculated"}</span>
+    <span class="xs muted" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.ownerId ? "By " : ""}${esc(creatorOf(r))}</span></button>`;
+}
+const recipeTile = r => `<div class="rtile" role="listitem">${recipeCard(r)}${isMine(r) ? `<button class="iconbtn rdel" data-act="del-ask" data-id="${esc(r._id)}" aria-label="Delete ${esc(r.title)}" title="Delete recipe">${icon("trash")}</button>` : ""}</div>`;
+function recipeSection(key, title, sub, list, o){
+  const wrap = o.wrap, arrows = !wrap && list.length > 0;
+  return `<section class="rsec" aria-labelledby="rs-${key}">
+    <div class="rsec-head"><div><h2 id="rs-${key}">${title}</h2><p>${sub}</p></div>
+      <div class="rsec-acts">${o.err ? "" : arrows ? `<button class="iconbtn rarrow" data-act="rscroll" data-row="${key}" data-dir="-1" aria-label="Scroll ${title} left">${icon("chevL")}</button><button class="iconbtn rarrow" data-act="rscroll" data-row="${key}" data-dir="1" aria-label="Scroll ${title} right">${icon("chevR")}</button>` : ""}${o.action || ""}</div></div>
+    ${o.err ? notice("Couldn't load these recipes. Check your connection and reload the page.", "danger") : o.loading ? `<div class="rscroll"><div class="rrow" aria-busy="true" aria-label="Loading recipes">${"<div class=\"rtile skel\"></div>".repeat(3)}</div></div>`
+      : list.length ? `<div class="rscroll"><div class="rrow ${wrap ? "wrap" : ""}" id="row-${key}" role="list" aria-label="${title}">${list.map(recipeTile).join("")}</div></div>`
+      : o.empty}</section>`;
 }
 VIEWS.recipes = () => {
-  if (S.recipeOpen) return recipeDetail(S.recipes.find(r => r._id === S.recipeOpen));
-  const cats = ["All", ...new Set(S.recipes.flatMap(r => r.labels || []))];
-  const list = S.recipes.filter(r => S.recipeCats.every(c => (r.labels||[]).includes(c)) && (!S.recipeQ || (r.title+" "+r.description+" "+(r.ingredients||[]).join(" ")).toLowerCase().includes(S.recipeQ.toLowerCase())));
-  const feat = S.recipes[0];
+  if (S.recipeOpen) return recipeDetail(findRecipe(S.recipeOpen));
+  const { mine, disc } = recipeLists(), filtering = !!(S.recipeQ || S.recipeCats.length);
+  const cats = ["All", ...new Set([...S.recipes, ...S.community].flatMap(r => [...(r.labels || []), mealCat(r)]).filter(Boolean))];
+  const loadMine = !S.recLoaded.community, loadDisc = !(S.recLoaded.community && S.recLoaded.recipes);
+  const addBtn = `<button class="btn primary" data-act="new-recipe">${icon("plus")}Add Recipe</button>`;
   return `
-  <div class="page-head"><div><h1>Discover recipes</h1><p class="lead">Find inspiration for your next meal.</p></div>
-    <div class="head-actions"><div class="search" style="min-width:min(300px,100%)">${icon("search")}<input class="input" id="recipe-q" type="search" placeholder="Search recipes" value="${esc(S.recipeQ)}" aria-label="Search recipes"></div><button class="btn" data-act="new-recipe">${icon("plus")}Add recipe</button></div></div>
-  ${!S.recipes.length ? `<div class="empty"><h3>No recipes yet</h3><p>Add a recipe to get started.</p><button class="btn primary" data-act="new-recipe">Add recipe</button></div>` : `
-  ${feat && !S.recipeQ && !S.recipeCats.length ? `<article class="card feature"><div style="position:relative;min-width:0">${recipeMedia(feat,"").replace('class="photo "','class="photo " style="height:100%;min-height:260px"')}</div>
-    <div class="body"><span class="eyebrow">Featured</span><h2 style="font-size:clamp(22px,2.6vw,28px)">${esc(feat.title)}</h2><p class="muted">${esc(feat.description)}</p>
-    <div class="chips" style="gap:6px"><span class="tag">${esc(feat.prepMinutes)} min</span>${(feat.labels||[]).map(l=>`<span class="tag">${esc(l)}</span>`).join("")}</div>
-    <div><button class="btn primary" data-act="recipe" data-id="${esc(feat._id)}">View recipe</button></div></div></article>` : ""}
-  <div style="display:flex;flex-direction:column;gap:6px"><div class="chips" role="group" aria-label="Recipe categories, select one or more">${cats.map(c => `<button class="chip" data-act="rcat" data-cat="${esc(c)}" aria-pressed="${c==="All" ? !S.recipeCats.length : S.recipeCats.includes(c)}">${c==="All"?"All recipes":esc(c)}</button>`).join("")}</div>
-    <span class="xs muted">${S.recipeCats.length ? `Showing recipes tagged ${esc(S.recipeCats.join(" and "))} · ${list.length} found` : "Select one or more categories to narrow the list."}</span></div>
-  <div class="grid g3" id="recipe-grid">${list.length ? list.map(recipeCard).join("") : `<div class="empty" style="grid-column:1/-1"><h3>No recipes match</h3></div>`}</div>`}`;
+  <div class="page-head"><div><h1>Recipes</h1><p class="lead">Save your own recipes and find inspiration for your next meal.</p></div>
+    <div class="head-actions"><div class="search" style="min-width:min(300px,100%)">${icon("search")}<input class="input" id="recipe-q" type="search" placeholder="Search recipes" value="${esc(S.recipeQ)}" aria-label="Search recipes"></div></div></div>
+  <div style="display:flex;flex-direction:column;gap:6px"><div class="chips" role="group" aria-label="Recipe categories, select one or more">${cats.map(c => `<button class="chip" data-act="rcat" data-cat="${esc(c)}" aria-pressed="${c === "All" ? !S.recipeCats.length : S.recipeCats.includes(c)}">${c === "All" ? "All recipes" : esc(c)}</button>`).join("")}</div>
+    <span class="xs muted">${S.recipeCats.length ? `Showing recipes tagged ${esc(S.recipeCats.join(" and "))}` : "Select one or more categories to narrow both lists."}</span></div>
+  ${recipeSection("mine", "Your Recipes", "Your personal recipes, shared with the community", mine, { loading:loadMine, err:S.recErr.community, action:addBtn,
+    empty:filtering && ownerId() && (S.community.some(r => r.ownerId === ownerId())) ? `<div class="empty"><h3>No matching recipes</h3><p>None of your recipes match this search or category.</p></div>`
+      : `<div class="empty"><h3>No recipes of your own yet</h3><p>Add a recipe and it will show up here and in Discover Recipes for everyone.</p><button class="btn primary" data-act="new-recipe">Add your first recipe</button></div>` })}
+  ${recipeSection("disc", "Discover Recipes", "Discover curated recipes and dishes shared by the community.", disc, { loading:loadDisc, err:S.recErr.recipes, wrap:S.exploreAll,
+    action:disc.length > 3 ? `<button class="btn" data-act="explore-all" aria-pressed="${S.exploreAll}">${S.exploreAll ? "Show fewer" : "Explore All"}</button>` : "",
+    empty:`<div class="empty"><h3>${filtering ? "No recipes match" : "No recipes to discover yet"}</h3><p>${filtering ? "Try a different search or category." : "Curated and community recipes will appear here."}</p></div>` })}`;
 };
 function recipeDetail(r){
   if (!r) { S.recipeOpen = null; return VIEWS.recipes(); }
+  const cat = mealCat(r), cook = +r.cookMinutes || 0;
   return `
   <div><button class="btn ghost sm" data-act="recipe-back">← All recipes</button></div>
   <div class="grid g2" style="align-items:start">
     <div style="min-width:0">${mediaBlock(r, true)}</div>
     <div style="display:flex;flex-direction:column;gap:12px;min-width:0"><h1>${esc(r.title)}</h1>
-      <div class="chips" style="gap:6px"><span class="tag">${esc(r.prepMinutes)} min</span>${r.servings?`<span class="tag">Serves ${esc(r.servings)}</span>`:""}${(r.labels||[]).map(l=>`<span class="tag">${esc(l)}</span>`).join("")}</div>
-      <p>${esc(r.description)}</p>
+      <div class="chips" style="gap:6px">${cook ? `<span class="tag">Prep ${esc(r.prepMinutes || 0)} min</span><span class="tag">Cook ${esc(cook)} min</span>` : `<span class="tag">${esc(r.prepMinutes)} min</span>`}${r.servings ? `<span class="tag">Serves ${esc(r.servings)}</span>` : ""}${cat ? `<span class="tag">${esc(cat)}</span>` : ""}${(r.labels || []).filter(l => l !== cat).map(l => `<span class="tag">${esc(l)}</span>`).join("")}</div>
+      <p class="small muted">${r.ownerId ? "Shared by " : "Source: "}${esc(creatorOf(r))}${ytWatch(r) ? ` · <a href="${esc(ytWatch(r))}" target="_blank" rel="noopener noreferrer">Original video on YouTube</a>` : ""}</p>
+      ${r.description ? `<p>${esc(r.description)}</p>` : ""}
       <div class="card" style="padding:14px 16px"><span class="eyebrow">Nutrition per serving</span>
         ${NutritionService.isNum(r.nutrition?.cal) ? `<p class="num small" style="margin-top:6px">${fmt(r.nutrition.cal)} kcal · P ${fmt(r.nutrition.protein)} g · C ${fmt(r.nutrition.carbs)} g · F ${fmt(r.nutrition.fat)} g</p>` : `<p class="small muted" style="margin-top:6px">Not calculated for this recipe. It depends on the brands and portions you use.</p>`}</div>
+      ${isMine(r) ? `<div><button class="btn danger" data-act="del-ask" data-id="${esc(r._id)}">${icon("trash")}Delete recipe</button></div>` : ""}
     </div>
   </div>
   <div class="grid g2" style="align-items:start">
-    <section class="card"><h2>Ingredients</h2><ul class="ing" style="margin-top:12px">${(r.ingredients||[]).map(i=>`<li>${esc(i)}</li>`).join("")}</ul></section>
-    <section class="card"><h2>Steps</h2><ol class="steps" style="margin-top:12px">${(r.steps||[]).map(s=>`<li>${esc(s)}</li>`).join("")}</ol></section>
+    <section class="card"><h2>Ingredients</h2><ul class="ing" style="margin-top:12px">${(r.ingredients || []).map(i => `<li>${esc(ingText(i))}</li>`).join("")}</ul></section>
+    <section class="card"><h2>Steps</h2><ol class="steps" style="margin-top:12px">${(r.steps || []).map(s => `<li>${esc(s)}</li>`).join("")}</ol></section>
   </div>
   ${r.note ? notice(esc(r.note), "info") : ""}`;
 }
+/* horizontal scroll cues: edge fades appear only on the side that has more to show */
+function updateRow(el){
+  const w = el.parentElement, wrap = el.classList.contains("wrap"), l = !wrap && el.scrollLeft > 4, r = !wrap && el.scrollLeft + el.clientWidth < el.scrollWidth - 4;
+  w.classList.toggle("can-l", l); w.classList.toggle("can-r", r);
+  const key = el.id.replace("row-", "");
+  document.querySelector(`[data-act="rscroll"][data-row="${key}"][data-dir="-1"]`)?.toggleAttribute("disabled", !l);
+  document.querySelector(`[data-act="rscroll"][data-row="${key}"][data-dir="1"]`)?.toggleAttribute("disabled", !r);
+}
+const updateRows = () => document.querySelectorAll(".rrow[id]").forEach(updateRow);
+document.addEventListener("scroll", e => { if (e.target.classList?.contains("rrow")) updateRow(e.target); }, true);
+window.addEventListener("resize", updateRows);
 
+/* writes only ever touch the signed-in person's own document, userRecipes/<their id>, which the database rules also restrict to them */
+async function persistMine(items){
+  const me = ownerId(); if (!me) throw new Error("signed_out");
+  await Store.saveShared("userRecipes", me, { items, updatedAt:new Date().toISOString() });
+  S.userDocs[me] = items; rebuildCommunity();
+}
+async function deleteRecipe(id){
+  const r = findRecipe(id), me = ownerId();
+  if (!r || !me || r.ownerId !== me) throw new Error("not_owner");   // client-side guard; the database rules are what actually stop other people
+  await persistMine((S.userDocs[me] || []).filter(x => x.id !== r.id));
+  if (r.thumbId && Store.assets) { try { await Store.assets.delete(r.thumbId); } catch {} }
+}
+function ingRow(i = {}){
+  return `<div class="ing-row"><input class="input" name="ing-qty" placeholder="Qty" aria-label="Quantity" maxlength="12" value="${esc(i.qty || "")}"><select class="input" name="ing-unit" aria-label="Unit">${UNITS.map(u => `<option value="${u}">${u || "unit"}</option>`).join("")}</select><input class="input" name="ing-name" placeholder="Ingredient" aria-label="Ingredient" maxlength="80"><button type="button" class="iconbtn" data-act="ing-del" aria-label="Remove ingredient">${icon("x")}</button></div>`;
+}
+function recipeModal(){
+  const me = ownerId(), blocked = !me ? "Sign in to add recipes." : Store.canWrite === false ? "You have view-only access, so you can't add recipes." : "";
+  openOverlay(`<form data-form="recipe" data-rid="u-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}" style="display:flex;flex-direction:column;gap:14px" novalidate><div style="display:flex;gap:12px"><h2>Add a recipe</h2><button type="button" class="iconbtn x" data-act="close" aria-label="Close" style="margin-left:auto">${icon("x")}</button></div>
+    ${blocked ? notice(esc(blocked), "danger") : `<p class="small muted">Recipes you add are shared with the community. Only you can delete them.</p>`}
+    <div class="field"><label for="rc-t">Recipe name *</label><input class="input" id="rc-t" name="title" required maxlength="80"></div>
+    <div class="grid g2"><div class="field"><label for="rc-c">Meal category *</label><select class="input" id="rc-c" name="category" required><option value="">Choose one</option>${MEAL_CATS.map(c => `<option>${c}</option>`).join("")}</select></div>
+      <div class="field"><label for="rc-v">Servings *</label><input class="input" id="rc-v" name="servings" type="number" min="1" max="99" value="2" inputmode="numeric"></div></div>
+    <div class="grid g2"><div class="field"><label for="rc-p">Prep time (minutes)</label><input class="input" id="rc-p" name="prep" type="number" min="0" max="1440" value="10" inputmode="numeric"></div>
+      <div class="field"><label for="rc-k">Cook time (minutes)</label><input class="input" id="rc-k" name="cook" type="number" min="0" max="1440" value="0" inputmode="numeric"></div></div>
+    <div class="field"><label for="rc-d">Short description</label><input class="input" id="rc-d" name="description" maxlength="200"></div>
+    <div class="field"><span class="lbl">Ingredients *</span><div id="ing-rows" style="display:flex;flex-direction:column;gap:8px">${ingRow() + ingRow() + ingRow()}</div>
+      <div><button type="button" class="btn sm" data-act="ing-add">${icon("plus")}Add ingredient</button></div></div>
+    <div class="field"><label for="rc-s">Cooking instructions * <span class="hint">(one step per line)</span></label><textarea class="input" id="rc-s" name="steps" style="font-family:var(--f-body);font-size:14px" maxlength="4000"></textarea></div>
+    <div class="field"><label for="rc-l">Dietary labels <span class="hint">(optional, comma separated)</span></label><input class="input" id="rc-l" name="labels" placeholder="Vegetarian, Dorm-friendly" maxlength="120"></div>
+    ${Store.assets ? `<div class="field"><label for="rc-th">Image (optional)</label><input id="rc-th" name="thumb" type="file" accept="image/png,image/jpeg,image/webp"><span class="hint">Without one, the card shows an illustrated placeholder.</span></div>` : ""}
+    <span class="err" id="rc-err" role="alert"></span>
+    <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn primary" type="submit" ${blocked ? "disabled" : ""}>Save recipe</button></div></form>`, true);
+}
+function readRecipeForm(f){
+  const fd = new FormData(f), n = fd.getAll("ing-name"), q = fd.getAll("ing-qty"), u = fd.getAll("ing-unit");
+  const ingredients = n.map((name, i) => ({ qty:String(q[i] || "").trim(), unit:String(u[i] || ""), name:String(name).trim() })).filter(x => x.name || x.qty);
+  const int = (k, lo, hi) => { const v = String(fd.get(k) ?? "").trim(); return /^\d+$/.test(v) && +v >= lo && +v <= hi ? +v : null; };
+  const title = String(fd.get("title") || "").trim(), category = String(fd.get("category") || ""), prep = int("prep", 0, 1440), cook = int("cook", 0, 1440), servings = int("servings", 1, 99);
+  const steps = String(fd.get("steps") || "").split("\n").map(s => s.trim()).filter(Boolean);
+  let err = "", focus = "";
+  const fail = (m, sel) => { if (!err) { err = m; focus = sel; } };
+  if (!title) fail("Give the recipe a name.", "#rc-t");
+  else if (!MEAL_CATS.includes(category)) fail("Choose a meal category.", "#rc-c");
+  else if (servings == null) fail("Servings must be a whole number from 1 to 99.", "#rc-v");
+  else if (prep == null || cook == null) fail("Prep and cook times must be whole minutes from 0 to 1440.", prep == null ? "#rc-p" : "#rc-k");
+  else if (prep + cook < 1) fail("Add a prep or cook time of at least 1 minute.", "#rc-p");
+  else if (!ingredients.length || ingredients.some(x => !x.name)) fail(ingredients.length ? "Give every ingredient with a quantity a name." : "Add at least one ingredient.", '[name="ing-name"]');
+  else if (!steps.length) fail("Add at least one cooking step.", "#rc-s");
+  const labels = [...new Set([category, ...String(fd.get("labels") || "").split(",").map(s => s.trim()).filter(Boolean)])].filter(Boolean);
+  return { err, focus, file:fd.get("thumb"), body:{ title, description:String(fd.get("description") || "").trim(), category, servings, prepMinutes:prep, cookMinutes:cook, labels, ingredients, steps } };
+}
+function mediaBlock(r, big){
+  return recipeMedia(r, "").replace('class="photo "','class="photo " style="aspect-ratio:16/9;border-radius:var(--r-lg)"');
+}
 /* agent: floating Wolfie Butler, on every page */
 function paintWidget(){
   const w = document.getElementById("wolfie"); if (!w) return;
   if (!S.chatOpen) { w.innerHTML = `<button class="wb-fab ${S.wbAnim?"landing":""}" data-act="wb-open" aria-label="Open Wolfie Butler chat">${mascot()}</button>`; S.wbAnim = false; return; }
-  const canSpeak = "speechSynthesis" in window;
   const anim = S.wbAnim; S.wbAnim = false;
+  Voice.loadStatus();   // asks the agent once whether voice is set up; every voice control stays hidden until it says yes
   w.innerHTML = `<section class="wb-panel ${anim?"opening":""}" role="dialog" aria-label="Wolfie Butler chat">
     <div class="wb-head"><span class="face">${mascot()}</span><div class="who"><b>Wolfie Butler</b><div class="xs muted">Web chat on Gemini · iMessage via Photon</div></div>
       <button class="iconbtn" data-act="wb-pin" aria-pressed="${!!S.wbPinned}" title="${S.wbPinned?"Unpin chat (it closes when the cursor leaves)":"Pin chat open"}" aria-label="${S.wbPinned?"Unpin chat":"Pin chat open"}">${icon("pin")}</button>
@@ -1237,8 +1393,10 @@ function paintWidget(){
     <div class="msgs" id="msgs"></div>
     ${!S.chat.length ? `<div class="prompts">${["Build me a lunch from this menu.","Explain my meal's nutrition.","Suggest swaps from available foods."].map(p=>`<button class="chip" data-act="prompt" data-p="${esc(p)}">${esc(p)}</button>`).join("")}</div>` : ""}
     <p class="wb-note">Wolfie Butler only uses dishes and nutrition listed in Nutrislice. All values are estimates.</p>
+    <div id="stt-bar" aria-live="polite">${sttBar()}</div>
     <form class="composer" data-form="chat"><input class="input" id="chat-in" name="m" autocomplete="off" placeholder="Message Wolfie Butler" aria-label="Message">
-      ${canSpeak ? `<button type="button" class="iconbtn" data-act="voice" aria-pressed="${S.voice}" title="${S.voice?"Voice replies on":"Read replies aloud"}" aria-label="Read replies aloud">${icon("speaker")}</button>` : ""}
+      <span id="mic-slot" style="display:contents">${micButton()}</span>
+      <button type="button" class="iconbtn" id="voice-toggle" ${voiceToggleShown() ? "" : "hidden"} data-act="voice" aria-pressed="${!!S.voice}" title="${S.voice?"Automatic voice replies on":"Read new replies aloud automatically"}" aria-label="Read new replies aloud automatically">${icon("speaker")}</button>
       <button class="btn primary" type="submit" ${S.chatBusy?"disabled":""} aria-label="Send">${icon("send")}</button></form>
   </section>`;
   paintMsgs();
@@ -1247,6 +1405,7 @@ let wbLast = Date.now(), wbClosing = false, wbHover = false, wbSuppress = false,
 function openWidget(){ if (S.chatOpen) return; S.chatOpen = true; S.wbAnim = true; wbTouch(); paintWidget(); }
 function closeWidget(){
   if (!S.chatOpen || wbClosing) return;
+  Voice.tts.stop(); Voice.rec.cancel();
   const panel = document.querySelector("#wolfie .wb-panel");
   const done = () => { wbClosing = false; S.chatOpen = false; S.wbAnim = true; paintWidget(); if (wbHover && !wbSuppress && !S.wbPinned) openWidget(); };
   if (!panel || matchMedia("(prefers-reduced-motion: reduce)").matches) return done();
@@ -1254,19 +1413,174 @@ function closeWidget(){
 }
 const wbTouch = () => { wbLast = Date.now(); };
 setInterval(() => {
-  if (!S.chatOpen || S.chatBusy || S.wbPinned || wbHover) return;
+  if (!S.chatOpen || S.chatBusy || S.wbPinned || wbHover || Voice.rec.state !== "idle" || Voice.rec.ready || Voice.tts.busy()) return;
   const inp = document.getElementById("chat-in");
   if (inp && inp.value.trim()) return;
   if (Date.now() - wbLast > 7000) closeWidget();
 }, 1000);
-function speak(text){
-  if (!S.voice || !("speechSynthesis" in window)) return;
+function speak(text, idx){
+  if (!S.voice) return;
+  if (idx != null && Voice.status?.tts) { Voice.tts.start(idx); return; }
+  if (!("speechSynthesis" in window)) return;
   try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(String(text).replace(/[*•#]/g,"").slice(0, 1200)); u.rate = 1.03; speechSynthesis.speak(u); } catch {}
 }
+/* ---------------- Voice (ElevenLabs through the agent): read replies aloud, speak a message ----------------
+   The browser never sees an ElevenLabs key. It calls /voice/* on the same agent as the chat, with the same account key.
+   A spoken message only fills the chat box; sending it is still AgentService.send, so history, profile sync and context are unchanged. */
+const Voice = {
+  status:null, askedAt:0,     // { tts, stt } from the agent, or null while unknown. Unknown or unavailable hides every voice control.
+  async loadStatus(){
+    if (this.status || Date.now() - this.askedAt < 30000) return;
+    this.askedAt = Date.now();
+    try { const d = await AccountSync.call("/voice/status"); this.status = { tts:!!d.tts, stt:!!d.stt }; paintVoiceUi(); } catch {}
+  },
+  async post(path, body, type, signal){
+    const key = await AccountSync.key();
+    const res = await fetch(AgentService.agentUrl + path, { method:"POST", headers:{ authorization:"Bearer " + key, "content-type":type }, body, signal });
+    if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || "Voice isn't available right now."); }
+    return res;
+  },
+  reset(){ this.tts.stop(); this.tts.drop(); this.rec.cancel(); }
+};
+Voice.tts = {
+  idx:null, state:"idle", err:"", audio:null, ctl:null, run:0, urls:new Map(),
+  busy(){ return this.state === "loading" || this.state === "playing" || this.state === "paused"; },
+  drop(){ this.urls.forEach(u => URL.revokeObjectURL(u)); this.urls.clear(); },
+  stop(){
+    this.run++; try { this.ctl?.abort(); } catch {} this.ctl = null;
+    if (this.audio) { try { this.audio.pause(); } catch {} this.audio.onended = this.audio.onerror = null; this.audio = null; }
+    const was = this.state !== "idle" || this.err; this.state = "idle"; this.idx = null; this.err = ""; if (was) paintTts();
+  },
+  async toggle(i){
+    if (this.idx === i && this.state === "playing") { this.audio.pause(); this.state = "paused"; paintTts(); }
+    else if (this.idx === i && this.state === "paused") { try { await this.audio.play(); this.state = "playing"; } catch { this.state = "paused"; } paintTts(); }
+    else if (this.idx === i && this.state === "loading") this.stop();      // pressing again cancels the request
+    else await this.start(i);
+  },
+  async start(i){
+    const text = S.chat[i]?.content; if (!text || S.chat[i].role !== "assistant" || !Voice.status?.tts) return;
+    this.stop();                                                           // one voice at a time: this also stops the previous message
+    const run = this.run; this.idx = i; this.state = "loading"; this.err = ""; paintTts();
+    try {
+      let url = this.urls.get(i);
+      if (!url) {
+        this.ctl = new AbortController();
+        const blob = await (await Voice.post("/voice/tts", JSON.stringify({ text }), "application/json", this.ctl.signal)).blob();
+        if (run !== this.run) return;
+        url = URL.createObjectURL(blob); this.urls.set(i, url);
+        while (this.urls.size > 3) { const [k, u] = this.urls.entries().next().value; URL.revokeObjectURL(u); this.urls.delete(k); }
+      }
+      const a = new Audio(url); this.audio = a;
+      a.onended = () => { if (this.audio === a) { this.audio = null; this.state = "idle"; this.idx = null; paintTts(); } };
+      a.onerror = () => { if (this.audio === a) { this.audio = null; this.urls.delete(i); this.state = "error"; this.err = "That audio couldn't be played."; paintTts(); } };
+      await a.play(); if (run !== this.run) return;
+      this.state = "playing"; paintTts();
+    } catch (e) {
+      if (run !== this.run || e?.name === "AbortError") return;
+      this.audio = null;
+      if (e?.name === "NotAllowedError") { this.state = "idle"; this.idx = null; this.err = ""; toast("Your browser blocked automatic audio. Press the speaker on the reply to listen."); }
+      else { this.state = "error"; this.err = /fetch/i.test(e?.message || "") ? "Couldn't reach the assistant for audio." : (e?.message || "Couldn't read that aloud."); }
+      paintTts();
+    }
+  }
+};
+Voice.rec = {
+  state:"idle", err:"", ready:false, mr:null, stream:null, chunks:[], timer:0, ctl:null, discard:false,
+  supported:() => !!(window.isSecureContext && navigator.mediaDevices?.getUserMedia && window.MediaRecorder),
+  async toggle(){
+    if (this.state === "recording") return this.stop();
+    if (this.state === "asking" || this.state === "processing") return;
+    await this.start();
+  },
+  async start(){
+    Voice.tts.stop();                                                      // don't record the assistant talking
+    this.err = ""; this.ready = false; this.discard = false; this.state = "asking"; paintStt();
+    try { this.stream = await navigator.mediaDevices.getUserMedia({ audio:true }); }   // the browser asks for permission here, on the click
+    catch (e) {
+      this.state = "error"; this.err = e?.name === "NotAllowedError" || e?.name === "SecurityError" ? "Microphone access is blocked. Allow it in your browser's site settings, then try again." : e?.name === "NotFoundError" ? "No microphone was found." : "Couldn't start the microphone.";
+      return paintStt();
+    }
+    if (this.state !== "asking") { this.release(); return; }               // cancelled while the permission prompt was open
+    const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"].find(t => MediaRecorder.isTypeSupported(t));
+    try { this.mr = new MediaRecorder(this.stream, mime ? { mimeType:mime } : undefined); }
+    catch { this.release(); this.state = "error"; this.err = "This browser can't record audio."; return paintStt(); }
+    const mr = this.mr, chunks = this.chunks = [];
+    mr.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    mr.onerror = () => { if (this.mr !== mr) return; this.release(); this.state = "error"; this.err = "The recording failed."; paintStt(); };
+    mr.onstop = () => this.finish(mr, chunks);
+    mr.start(); this.state = "recording"; paintStt();
+    this.timer = setTimeout(() => this.stop(), 60000);                     // never record longer than a minute
+  },
+  stop(){ clearTimeout(this.timer); if (this.mr && this.mr.state !== "inactive") this.mr.stop(); },
+  release(){ clearTimeout(this.timer); this.stream?.getTracks().forEach(t => t.stop()); this.stream = null; this.mr = null; },   // turns the microphone light off
+  cancel(){
+    if (this.state === "idle" && !this.ready && !this.err) return;
+    this.discard = true; try { this.ctl?.abort(); } catch {} this.ctl = null;
+    if (this.mr && this.mr.state !== "inactive") { try { this.mr.stop(); } catch {} }
+    this.release(); this.state = "idle"; this.err = ""; this.ready = false; paintStt();
+  },
+  async finish(mr, chunks){
+    if (this.mr !== mr) return;                                            // cancelled, or a newer recording has started: this one is stale
+    const type = mr.mimeType || chunks[0]?.type || "audio/webm", blob = new Blob(chunks, { type });
+    this.release();
+    if (blob.size < 400) { this.state = "error"; this.err = "That was too short. Hold the microphone a little longer and speak."; return paintStt(); }
+    this.state = "processing"; paintStt();
+    this.ctl = new AbortController(); const ctl = this.ctl;
+    try {
+      const d = await (await Voice.post("/voice/stt", blob, type, ctl.signal)).json();
+      if (ctl.signal.aborted) return;
+      const text = String(d.text || "").trim();
+      if (!text) { this.state = "error"; this.err = "I didn't catch anything. Try again a little closer to the microphone."; return paintStt(); }
+      const inp = document.getElementById("chat-in");
+      if (!inp) { this.state = "idle"; return paintStt(); }
+      inp.value = (inp.value.trim() ? inp.value.trim() + " " : "") + text;   // nothing is sent yet: the student can edit it, then press Send
+      this.state = "idle"; this.ready = true; paintStt(); inp.focus();
+    } catch (e) {
+      if (ctl.signal.aborted || e?.name === "AbortError") return;
+      this.state = "error"; this.err = /fetch/i.test(e?.message || "") ? "Couldn't reach the assistant to transcribe that." : (e?.message || "Couldn't transcribe that.");
+      paintStt();
+    }
+  }
+};
+const ttsLabel = { idle:"Read this reply aloud", loading:"Loading audio. Press to cancel", playing:"Pause", paused:"Resume", error:"Try reading this reply aloud again" };
+function ttsControls(i){
+  const t = Voice.tts, mine = t.idx === i, st = mine ? t.state : "idle", note = mine && t.state === "error" ? t.err : "";
+  return `<span class="vc" data-i="${i}"><button type="button" class="vbtn" data-act="tts" data-i="${i}" aria-label="${ttsLabel[st]}" title="${ttsLabel[st]}">${st === "loading" ? '<i class="spin" aria-hidden="true"></i>' : icon(st === "playing" ? "pause" : st === "paused" ? "play" : "speaker")}</button>${mine && (st === "playing" || st === "paused") ? `<button type="button" class="vbtn" data-act="tts-stop" aria-label="Stop playback" title="Stop">${icon("stop")}</button>` : ""}<span class="vmsg" role="status">${note ? esc(note) : mine && st === "loading" ? "Loading audio…" : ""}</span></span>`;
+}
+function keepFocus(fn){
+  const a = document.activeElement, sel = a && a.dataset && a.dataset.act ? `[data-act="${a.dataset.act}"]${a.dataset.i != null ? `[data-i="${a.dataset.i}"]` : ""}` : "";
+  fn(); if (sel) document.querySelector(sel)?.focus();
+}
+function paintTts(){ keepFocus(() => document.querySelectorAll(".vc[data-i]").forEach(el => { el.outerHTML = ttsControls(+el.dataset.i); })); }
+function micButton(){
+  if (!Voice.status?.stt || !Voice.rec.supported()) return "";
+  const s = Voice.rec.state, on = s === "recording";
+  return `<button type="button" class="iconbtn mic ${on ? "rec" : ""}" id="mic-btn" data-act="mic" aria-pressed="${on}" ${s === "asking" || s === "processing" ? "disabled" : ""} aria-label="${on ? "Stop recording" : "Speak your message"}" title="${on ? "Stop recording" : "Speak your message"}">${icon(on ? "stop" : "mic")}</button>`;
+}
+function sttBar(){
+  const r = Voice.rec;
+  const say = (t, btn = "", alert = false) => `<div class="stt-bar ${r.state === "error" ? "bad" : ""}" ${alert ? 'role="alert"' : ""}><span>${t}</span>${btn}</div>`;
+  if (r.state === "asking") return say("Waiting for microphone permission…");
+  if (r.state === "recording") return say('<i class="recdot" aria-hidden="true"></i>Listening… press the microphone to stop.', '<button type="button" class="btn ghost sm" data-act="stt-cancel">Cancel</button>');
+  if (r.state === "processing") return say("Turning your speech into text…", '<button type="button" class="btn ghost sm" data-act="stt-cancel">Cancel</button>');
+  if (r.state === "error") return say(esc(r.err), '<button type="button" class="btn ghost sm" data-act="stt-cancel">Dismiss</button>', true);
+  if (r.ready) return say("Check the text below, edit it if needed, then press Send.", '<button type="button" class="btn ghost sm" data-act="stt-discard">Discard</button>');
+  return "";
+}
+function paintStt(){
+  keepFocus(() => {
+    const slot = document.getElementById("mic-slot"); if (slot) slot.innerHTML = micButton();
+    const bar = document.getElementById("stt-bar"); if (bar) bar.innerHTML = sttBar();
+  });
+  wbTouch();
+}
+function paintVoiceUi(){ if (document.getElementById("msgs")) { paintMsgs(); paintStt(); const sp = document.getElementById("voice-toggle"); if (sp) sp.hidden = !voiceToggleShown(); } }
+const voiceToggleShown = () => "speechSynthesis" in window || !!Voice.status?.tts;
+window.addEventListener("pagehide", () => { Voice.tts.stop(); Voice.rec.cancel(); });
 function paintMsgs(){
   const el = document.getElementById("msgs"); if (!el) return;
   el.innerHTML = (S.chat.length ? "" : `<div class="msg bot">Hi, I'm Wolfie Butler! I can build a meal from today's ${esc(CONFIG.halls[S.hall].short)} menu, explain your plan's nutrition, or suggest swaps. What sounds good?</div>`) +
-    S.chat.map(m => `<div class="msg ${m.role==="user"?"me":"bot"}">${m.role==="user"?esc(m.content):mdLite(m.content)}${m.acts?.length?`<span class="act">${esc(m.acts.join(" · "))}</span>`:""}</div>`).join("") +
+    S.chat.map((m, i) => `<div class="msg ${m.role==="user"?"me":"bot"}">${m.role==="user"?esc(m.content):mdLite(m.content)}${m.acts?.length?`<span class="act">${esc(m.acts.join(" · "))}</span>`:""}${m.role==="assistant" && !m.local && Voice.status?.tts ? ttsControls(i) : ""}</div>`).join("") +
     (S.chatBusy && !S.chat.at(-1)?.streaming ? `<div class="msg bot muted">Thinking…</div>` : "");
   el.scrollTop = el.scrollHeight;
 }
@@ -1398,18 +1712,6 @@ function foodDrawer(f, fromPlan){
     ${fromPlan ? "" : `<div style="display:flex;flex-direction:column;gap:10px;margin-top:auto"><div style="display:flex;gap:10px;align-items:center"><span class="lbl">Servings</span><div class="stepper" role="group" aria-label="Servings"><button data-act="dq" data-d="-1" aria-label="Fewer">−</button><output class="num" id="dq">1</output><button data-act="dq" data-d="1" aria-label="More">+</button></div><button class="btn sm ${isFav(f.id)?"primary":""}" style="margin-left:auto" data-act="fav-drawer" data-id="${esc(f.id)}" data-station="${esc(f.station)}">${icon("heart")}${isFav(f.id)?"Favourited":"Favourite"}</button></div>
       <div id="drawer-pick">${addPicker(f, true)}</div></div>`}`);
 }
-function recipeModal(){
-  openOverlay(`<form data-form="recipe" style="display:flex;flex-direction:column;gap:14px"><div style="display:flex;gap:12px"><h2>Add a recipe</h2><button type="button" class="iconbtn x" data-act="close" aria-label="Close">${icon("x")}</button></div>
-    <div class="field"><label for="rc-t">Title</label><input class="input" id="rc-t" name="title" required></div>
-    <div class="field"><label for="rc-d">Short description</label><input class="input" id="rc-d" name="description"></div>
-    <div class="grid g2"><div class="field"><label for="rc-m">Prep time (minutes)</label><input class="input" id="rc-m" name="prep" type="number" min="1" value="15"></div><div class="field"><label for="rc-l">Labels (comma separated)</label><input class="input" id="rc-l" name="labels" placeholder="Vegetarian, Dorm-friendly"></div></div>
-    <div class="field"><label for="rc-i">Ingredients (one per line)</label><textarea class="input" id="rc-i" name="ingredients" style="font-family:var(--f-body);font-size:14px"></textarea></div>
-    <div class="field"><label for="rc-s">Steps (one per line)</label><textarea class="input" id="rc-s" name="steps" style="font-family:var(--f-body);font-size:14px"></textarea></div>
-    ${Store.assets ? `<div class="field"><label for="rc-th">Thumbnail image (optional)</label><input id="rc-th" name="thumb" type="file" accept="image/png,image/jpeg,image/webp"><span class="hint">Without one, the card keeps its illustrated thumbnail.</span></div>` : ""}
-    <span class="err" id="rc-err"></span>
-    <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn primary" type="submit">Save recipe</button></div></form>`, true);
-}
-
 /* ---------------- Agent + Photon bridge ---------------- */
 const AgentService = {
   ctl:null,
@@ -1453,7 +1755,7 @@ ${this.context()}`; },
       const res = await fetch(this.agentUrl + "/chat", { method:"POST", headers:{ "content-type":"application/json", authorization:"Bearer " + key }, body:JSON.stringify({ text, sessionId:sid, page, profile: S.profile ? agentProfile(S.profile) : null, profileUpdatedAt: S.profile?.updatedAt || null }), signal:this.ctl.signal });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.reply) throw new Error(data.error || "The agent didn't answer.");
-      S.chat.push({ role:"assistant", content:data.reply, acts:[] }); speak(data.reply);
+      S.chat.push({ role:"assistant", content:data.reply, acts:[] }); speak(data.reply, S.chat.length - 1);
       if (data.profile && (data.profileUpdatedAt || "") > (S.profile?.updatedAt || "")) applyAgentProfile(data.profile, data.profileUpdatedAt);   // changed by this chat, or over iMessage
     } catch(e) {
       if (e?.name !== "AbortError") S.chat.push({ role:"assistant", local:true, content: e?.message && !/fetch/i.test(e.message) ? e.message : `I can't reach the agent at ${this.agentUrl}. Start it (open the photon folder and run: bun agent.ts), then try again.` });
@@ -1798,7 +2100,9 @@ class Liquid {
   }
 }
 function render(){
+  const rowPos = S.view === "recipes" ? Object.fromEntries([...document.querySelectorAll(".rrow[id]")].map(el => [el.id, el.scrollLeft])) : null;
   document.getElementById("view").innerHTML = VIEWS[S.view]();
+  if (S.view === "recipes") { document.querySelectorAll(".rrow[id]").forEach(el => { if (rowPos && rowPos[el.id]) el.scrollLeft = rowPos[el.id]; }); updateRows(); }
   mountLiquids();
   if (S.view === "profile") AccountSync.refreshLink();
   if (S.view === "menus") { paintFoodGrid(); paintSideList(); paintMealBar(); }
@@ -1869,7 +2173,12 @@ document.addEventListener("click", async e => {
       a.setAttribute("aria-label", S.wbPinned ? "Unpin chat" : "Pin chat open");
       if (!S.wbPinned && !wbHover) wbLeaveT = setTimeout(closeWidget, 350);
       break; }
-    case "voice": S.voice = !S.voice; a.setAttribute("aria-pressed", S.voice); a.title = S.voice ? "Voice replies on" : "Read replies aloud"; if (!S.voice) { try { speechSynthesis.cancel(); } catch {} } else speak("Voice replies are on."); toast(S.voice ? "Wolfie Butler will read replies aloud" : "Voice replies off"); break;
+    case "voice": S.voice = !S.voice; a.setAttribute("aria-pressed", S.voice); a.title = S.voice ? "Automatic voice replies on" : "Read new replies aloud automatically"; if (!S.voice) { Voice.tts.stop(); try { speechSynthesis.cancel(); } catch {} } else if (!Voice.status?.tts) speak("Voice replies are on."); toast(S.voice ? "Wolfie Butler will read new replies aloud" : "Automatic voice replies off"); break;
+    case "tts": Voice.tts.toggle(+a.dataset.i); break;
+    case "tts-stop": Voice.tts.stop(); break;
+    case "mic": Voice.rec.toggle(); break;
+    case "stt-cancel": Voice.rec.cancel(); break;
+    case "stt-discard": { const inp = document.getElementById("chat-in"); if (inp) { inp.value = ""; inp.focus(); } Voice.rec.cancel(); break; }
     case "plan-food": { const it = S.plan.items.find(i => i.key === a.dataset.key); if (it) foodDrawer({ id:it.foodId, name:it.name, station:it.station, serving:it.serving, nutr:it.nutr, labels:it.labels||[], allergens:it.allergens||[], desc:"" }, true); break; }
     case "dq": { const o = document.getElementById("dq"), n = Math.max(1, (+o.textContent) + (+a.dataset.d)); o.textContent = n; break; }
     case "add": { const f = findFood(a.dataset.id, a.dataset.station); if (!f) { toast("Couldn't add that dish. Reload the menu and try again."); break; } const q = Math.max(1, parseInt(a.dataset.qty)||1);
@@ -1888,12 +2197,24 @@ document.addEventListener("click", async e => {
     case "recipe": S.recipeOpen = a.dataset.id; render(); window.scrollTo({top:0}); break;
     case "recipe-back": S.recipeOpen = null; render(); break; 
     case "new-recipe": recipeModal(); break;
+    case "explore-all": S.exploreAll = !S.exploreAll; render(); break;
+    case "rscroll": { const el = document.getElementById("row-" + a.dataset.row); if (el) el.scrollBy({ left:(+a.dataset.dir) * Math.max(240, el.clientWidth * 0.8), behavior:matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); break; }
+    case "ing-add": { const rows = document.getElementById("ing-rows"); if (rows && rows.children.length < 40) { rows.insertAdjacentHTML("beforeend", ingRow()); rows.lastElementChild.querySelector("input").focus(); } break; }
+    case "ing-del": { const rows = a.closest("#ing-rows"); if (rows && rows.children.length > 1) a.closest(".ing-row").remove(); else a.closest(".ing-row")?.querySelectorAll("input").forEach(i => i.value = ""); break; }
+    case "del-ask": { const r = findRecipe(a.dataset.id); if (!r || !isMine(r)) { toast("You can only delete recipes you added."); break; }
+      openOverlay(`<div style="display:flex;flex-direction:column;gap:14px"><h2>Delete this recipe?</h2><p>“${esc(r.title)}” will be removed for you and for everyone it is shared with. This can't be undone.</p><span class="err" id="del-err" role="alert"></span>
+        <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="btn ghost" data-act="close">Cancel</button><button type="button" class="btn danger" data-act="del-confirm" data-id="${esc(r._id)}">${icon("trash")}Delete recipe</button></div></div>`, true); break; }
+    case "del-confirm": {
+      if (a.disabled) break; a.disabled = true; a.lastChild.textContent = "Deleting…";
+      try { await deleteRecipe(a.dataset.id); if (S.recipeOpen === a.dataset.id) S.recipeOpen = null; closeOverlay(); render(); toast("Recipe deleted"); }
+      catch (err) { a.disabled = false; a.lastChild.textContent = "Delete recipe"; const el = document.getElementById("del-err"); if (el) el.textContent = err.message === "not_owner" ? "You can only delete recipes you added." : "Couldn't delete the recipe. Check your connection and try again."; }
+      break; }
     case "prompt": AgentService.send(a.dataset.p); break;
     case "pf-chip": { S.draft = readProfileForm(); const g = a.dataset.group, v = a.dataset.v, arr = new Set(S.draft[g] || []); arr.has(v) ? arr.delete(v) : arr.add(v); S.draft[g] = [...arr]; a.setAttribute("aria-pressed", arr.has(v)); break; }
     case "pf-mode": { S.draft = readProfileForm(); S.draft.targetMode = a.dataset.v; document.querySelectorAll('[data-act="pf-mode"]').forEach(b => b.setAttribute("aria-pressed", b.dataset.v === a.dataset.v)); document.getElementById("custom-targets").hidden = a.dataset.v !== "custom"; document.getElementById("ct-note").hidden = a.dataset.v !== "custom"; refreshProfileSide(S.draft); break; }
     case "skip-profile": { const p = readProfileForm(); S.profile = { ...p, phone: normalizePhone(p.phone) || "", updatedAt: new Date().toISOString() }; S.draft = null; endPhoneEdit(); await Store.savePrivate("profile", S.profile); AccountSync.push(); go("overview"); break; }
     case "reset": S.confirm = "reset"; render(); break;
-    case "reset-yes": { S.profile = null; S.plan = { items:[] }; S.draft = null; S.confirm = null; S.chat = []; S.link = {}; endPhoneEdit(); AccountSync.deleteRemote();
+    case "reset-yes": { Voice.reset(); S.profile = null; S.plan = { items:[] }; S.draft = null; S.confirm = null; S.chat = []; S.link = {}; endPhoneEdit(); AccountSync.deleteRemote();
       try { if (Store.db && Store.uid) { await Store.db.doc(Store.userDoc("profile")).delete(); await Store.db.doc(Store.userDoc("mealplan")).delete(); } } catch {}
       try { localStorage.removeItem("np.profile"); localStorage.removeItem("np.mealplan"); } catch {}
       paintNav(); render(); toast("Your data was deleted"); break; }
@@ -1941,13 +2262,14 @@ document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === 
 document.addEventListener("input", e => {
   const t = e.target;
   if (t.id === "menu-q") { S.q = t.value; paintFoodGrid(); }
+  if (t.id === "chat-in" && Voice.rec.ready) { Voice.rec.ready = false; paintStt(); }
   if (t.id === "pf-phone") { S.phoneDraft = t.value; if (S.phoneErr) { S.phoneErr = ""; t.classList.remove("bad"); t.parentElement.querySelector(".err")?.remove(); } }
   if (t.id === "recipe-q") { S.recipeQ = t.value; clearTimeout(t._d); t._d = setTimeout(() => { const pos = t.selectionStart; render(); const n = document.getElementById("recipe-q"); n.focus(); n.setSelectionRange(pos,pos); }, 250); }
   if (t.closest("#profile-form") && (t.type === "number" || t.type === "text")) { clearTimeout(t._d); t._d = setTimeout(() => { const p = { ...readProfileForm(), diet:S.draft?.diet ?? S.profile?.diet ?? [], allergies:S.draft?.allergies ?? S.profile?.allergies ?? [], targetMode:S.draft?.targetMode ?? S.profile?.targetMode ?? "estimated" }; S.draft = p; refreshProfileSide(p); }, 200); }
 });
 document.addEventListener("submit", async e => {
   const f = e.target; e.preventDefault();
-  if (f.dataset.form === "chat") { const v = f.m.value.trim(); if (!v || S.chatBusy) return; f.m.value = ""; AgentService.send(v); }
+  if (f.dataset.form === "chat") { const v = f.m.value.trim(); if (!v || S.chatBusy) return; f.m.value = ""; Voice.rec.cancel(); AgentService.send(v); }   // a spoken message goes through this same send
   if (f.dataset.form === "profile") {
     const p = { ...readProfileForm(), diet:S.draft?.diet ?? S.profile?.diet ?? [], allergies:S.draft?.allergies ?? S.profile?.allergies ?? [], targetMode:S.draft?.targetMode ?? S.profile?.targetMode ?? "estimated" };
     const v = NutritionService.validate(p); S.profileErrors = v.errors;
@@ -1962,15 +2284,27 @@ document.addEventListener("submit", async e => {
     paintNav(); render();   // stay on this page: show the saved values (and, after the first save, the normal "Profile & targets" heading)
   }
   if (f.dataset.form === "recipe") {
-    const fd = new FormData(f), title = (fd.get("title")||"").trim(), err = document.getElementById("rc-err");
-    if (!title) { err.textContent = "Give the recipe a title."; return; }
-    const lines = k => String(fd.get(k)||"").split("\n").map(s=>s.trim()).filter(Boolean);
-    const id = "r-" + Date.now().toString(36);
-    const body = { title, description:(fd.get("description")||"").trim(), prepMinutes:Math.max(1, parseInt(fd.get("prep"))||15), labels:String(fd.get("labels")||"").split(",").map(s=>s.trim()).filter(Boolean),
-      ingredients:lines("ingredients"), steps:lines("steps"), thumbId:null, nutrition:null, createdAt:new Date().toISOString(), source:"Added by a Wolfie Butler user" };
-    const file = fd.get("thumb");
-    if (file && file.size && Store.assets) { try { body.thumbId = (await Store.assets.upload(file)).id; } catch(e) { err.textContent = "The thumbnail didn't upload, so the recipe will use the illustrated thumbnail. " ; } }
-    try { await Store.saveShared("recipes", id, body); closeOverlay(); toast("Recipe saved"); } catch { err.textContent = "Couldn't save. You may only have view access to this app."; }
+    const err = document.getElementById("rc-err"), btn = f.querySelector('button[type="submit"]'), me = ownerId();
+    if (S.recipeSaving) return;                                             // a double click must not save twice
+    err.textContent = "";
+    if (!me) { err.textContent = "Sign in to add recipes."; return; }
+    const { err:problem, focus, file, body } = readRecipeForm(f);
+    if (problem) { err.textContent = problem; f.querySelector(focus)?.focus(); return; }
+    const existing = S.userDocs[me] || [], id = f.dataset.rid;               // the id is minted when the form opens, so a retry overwrites instead of duplicating
+    if (!existing.some(x => x.id === id) && existing.length >= MAX_USER_RECIPES) { err.textContent = `You can keep up to ${MAX_USER_RECIPES} recipes. Delete one to add another.`; return; }
+    S.recipeSaving = true; btn.disabled = true; btn.textContent = "Saving…";
+    let thumbId = null, imageFailed = false;
+    if (file && file.size && Store.assets) {
+      if (!["image/png", "image/jpeg", "image/webp"].includes(file.type) || file.size > 20 * 1024 * 1024) imageFailed = true;
+      else { try { thumbId = (await Store.assets.upload(file)).id; } catch { imageFailed = true; } }
+    }
+    const item = { id, ...body, thumbId, nutrition:null, ownerId:me, visibility:"public", source:"community", createdAt:new Date().toISOString() };
+    try {
+      await persistMine([item, ...existing.filter(x => x.id !== id)]);
+      closeOverlay(); S.recipeQ = ""; S.recipeCats = []; render(); document.getElementById("row-mine")?.scrollTo({ left:0 });
+      toast(imageFailed ? "Recipe saved. The image couldn't be used, so it shows the placeholder." : "Recipe saved");
+    } catch { err.textContent = Store.canWrite === false ? "You have view-only access, so you can't save recipes." : "Couldn't save the recipe. Check your connection and try again."; btn.disabled = false; btn.textContent = "Save recipe"; }
+    finally { S.recipeSaving = false; }
   }
 });
 function repaintAdding(){ if (S.view === "menus") paintFoodGrid(); else if (S.view === "favourites") render(); }
@@ -1999,6 +2333,28 @@ async function uploadImage(input){
     toast("Photo saved"); render();
   } catch(e) { toast(e?.code === "too_large" ? "That image is too large. Use one under 20 MB." : e?.code === "unsupported_type" ? "Use a PNG, JPEG or WebP image." : "The photo didn't upload. Try again."); }
 }
+/* Curated recipes ship in data/recipes.json under stable ids. Seeding only adds an id that is missing, so a restart or a second run never duplicates or overwrites anything.
+   It runs for the local device store, or for someone with edit access to the cloud database (the rules keep everyone else from writing curated recipes). */
+/* Curated recipes that were taken out of the catalogue. Seeding removes them from the shared `recipes` collection (never from anyone's own userRecipes) so copies saved earlier go too. */
+const RETIRED_RECIPE_IDS = ["r-overnight-oats", "r-tofu-rice-bowl", "r-black-bean-quesadilla", "r-chickpea-salad", "r-egg-fried-rice", "r-yogurt-parfait"];
+const RETIRED_RECIPE_TITLES = ["dorm overnight oats", "gochujang tofu rice bowl", "black bean and corn quesadilla", "lemon chickpea salad", "leftover egg fried rice", "greek yogurt parfait", "egg fried"];
+async function seedRecipes(onChange){
+  if (seedRecipes.done) return; seedRecipes.done = true;
+  let allowed = Store.mode === "device";
+  if (!allowed && Store.user) { try { allowed = !!(await Store.user.canEdit()); } catch {} }
+  if (!allowed) return;
+  let removed = 0;
+  try {
+    for (const r of S.recipes.filter(r => RETIRED_RECIPE_IDS.includes(r._id) || (!r.ownerId && RETIRED_RECIPE_TITLES.includes(String(r.title).trim().toLowerCase())))) { await Store.deleteShared("recipes", r._id); removed++; }
+    if (removed && Store.mode === "device") onChange(lsGet("np.c.recipes") || []);
+  } catch (e) { console.warn("[recipe-seed] cleanup skipped:", e.message); }
+  try {
+    const res = await fetch("data/recipes.json"); if (!res.ok) throw new Error("HTTP " + res.status);
+    const have = new Set(S.recipes.map(r => r._id)); let added = 0;
+    for (const r of await res.json()) { if (!r || !r.id || !r.title || have.has(r.id)) continue; const { id, ...body } = r; await Store.saveShared("recipes", id, body); have.add(id); added++; }
+    if (added && Store.mode === "device") onChange(lsGet("np.c.recipes") || []);   // the cloud database announces its own changes
+  } catch (e) { console.warn("[recipe-seed] skipped:", e.message); }
+}
 /* ---------------- Boot ---------------- */
 function migratePlan(items){
   const out = [];
@@ -2026,8 +2382,12 @@ function migratePlan(items){
     if (!currentMenu()) { const ds = datesFor(S.hall); const pick = ds.find(d => d >= todayISO()) || ds.at(-1); if (pick && !S.menus[menuKey(S.hall,todayISO())]) S.date = pick; }
     if (!document.querySelector(".scrim") && !document.activeElement?.closest?.("form,#menu-q")) render(); else if (S.view === "menus") paintFoodGrid(); });
   Store.watch("site", docs => { S.site = docs.find(d => d._id === "config") || {}; if (S.view === "overview" && !document.querySelector(".scrim")) render(); if (!S.chatOpen) paintWidget(); });
-  Store.watch("recipes", docs => { S.recipes = docs.filter(r => r && r.title).sort((a,b) => (a.order ?? 99) - (b.order ?? 99) || String(a.title).localeCompare(b.title));
-    if (!document.querySelector(".scrim") && !document.activeElement?.closest?.("form")) render(); });
+  const redraw = () => { if (!document.querySelector(".scrim") && !document.activeElement?.closest?.("form")) render(); };
+  const onRecipes = docs => { S.recipes = docs.filter(r => r && r.title).sort((a,b) => (a.order ?? 99) - (b.order ?? 99) || String(a.title).localeCompare(b.title));
+    S.recLoaded.recipes = true; S.recErr.recipes = false; redraw(); };
+  Store.watch("recipes", docs => { onRecipes(docs); seedRecipes(onRecipes); }, () => { S.recLoaded.recipes = true; S.recErr.recipes = true; redraw(); });
+  Store.watch("userRecipes", docs => { S.userDocs = Object.fromEntries(docs.map(d => [d._id, Array.isArray(d.items) ? d.items : []]));
+    rebuildCommunity(); S.recLoaded.community = true; S.recErr.community = false; redraw(); resolveNames(); }, () => { S.recLoaded.community = true; S.recErr.community = true; redraw(); });
   /* TEMP demo seed: outside Claude's preview there is no cloud db (Store.mode === "device"), so nothing ever fills `menus`.
      Load the bundled Nutrislice-parsed files in data/ once. Needs the site served over http(s); fetch() is blocked on file://. */
   if (Store.mode === "device") {

@@ -7,10 +7,12 @@ import { imessageLine, type Ask } from "./channel";
 import { announceWebAccount, demoConfig, demoProof } from "./demo";
 import { cleanStamp, reconcile } from "./profile-sync";
 import { oneAtATime } from "./queue";
+import { MAX_AUDIO_BYTES, MAX_TTS_CHARS, VoiceError, synthesize, transcribe, voiceStatus } from "./voice";
 
 const WEB_MAX_PER_MINUTE = 20; // all web visitors together, protects your Gemini quota
 const WEB_MAX_SESSIONS = 200;  // remembered web conversations
 const MAX_BODY = 20_000;
+const VOICE_MAX_PER_MINUTE = 40; // all voice requests together (speech costs ElevenLabs credits, and anyone can make an account key)
 
 const obj = (v: unknown) => (v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : {});
 const str = (v: unknown) => (typeof v === "string" ? v : "");
@@ -26,6 +28,7 @@ export type ApiOptions = {
 export function createApi(opts: ApiOptions) {
   const sessions = new Map<string, Content[]>();
   let recent: number[] = [];
+  let recentVoice: number[] = [];
 
   return async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const origin = String(req.headers.origin ?? "");
@@ -37,7 +40,7 @@ export function createApi(opts: ApiOptions) {
       res.writeHead(status, { "content-type": "application/json", "cache-control": "no-store", vary: "Origin", ...cors });
       res.end(body ? JSON.stringify(body) : undefined);
     };
-    const routes = ["/chat", "/profile", "/link/start", "/link/status", "/link/remove", "/account/delete"];
+    const routes = ["/chat", "/profile", "/link/start", "/link/status", "/link/remove", "/account/delete", "/voice/status", "/voice/tts", "/voice/stt"];
     if (!routes.includes(path)) return send(404, { error: "Not found." });
     // Opening the link in a browser tab sends no website address: show a status note instead of an error.
     if (path === "/chat" && !origin && req.method === "GET") return send(200, { ok: true, note: "The agent is running. Chat with it from the Wolfie Butler site." });
@@ -63,6 +66,38 @@ export function createApi(opts: ApiOptions) {
       console.error("API error:", e instanceof Error ? e.message : e);
       return send(500, { error: "Something went wrong. Try again in a moment." });
     };
+
+    // ---- voice (ElevenLabs): same account key and origin rules as chat; the key to ElevenLabs never leaves this server ----
+    if (path.startsWith("/voice/")) {
+      try {
+        if (path === "/voice/status") return req.method === "GET" ? send(200, voiceStatus()) : send(405, { error: "Use GET." });
+        if (req.method !== "POST") return send(405, { error: "Use POST." });
+        if (!voiceStatus().tts) return send(503, { error: "Voice isn't set up on the assistant yet." });
+        const t = Date.now();
+        recentVoice = recentVoice.filter((x) => t - x < 60_000);
+        if (recentVoice.length >= VOICE_MAX_PER_MINUTE) return send(429, { error: "Too many voice requests right now. Wait a minute and try again." });
+        recentVoice.push(t);
+        if (path === "/voice/tts") {
+          const body = await readBody(); if (!body) return;
+          const text = str(body.text);
+          if (!text.trim()) return send(400, { error: "There is nothing to read aloud." });
+          if (text.length > MAX_TTS_CHARS * 3) return send(413, { error: "That text is too long to read aloud." });
+          const audio = await synthesize(text);
+          res.writeHead(200, { "content-type": "audio/mpeg", "content-length": audio.length, "cache-control": "no-store", vary: "Origin", ...(opts.allowed(origin) ? { "access-control-allow-origin": origin } : {}) });
+          return void res.end(audio);
+        }
+        // /voice/stt: the body is the recorded audio itself
+        const declared = Number(req.headers["content-length"]);
+        if (Number.isFinite(declared) && declared > MAX_AUDIO_BYTES) return send(413, { error: "That recording is too long." });
+        const chunks: Buffer[] = []; let size = 0;
+        for await (const chunk of req) { size += chunk.length; if (size > MAX_AUDIO_BYTES) return send(413, { error: "That recording is too long." }); chunks.push(chunk as Buffer); }
+        const text = await transcribe(Buffer.concat(chunks), String(req.headers["content-type"] ?? ""));
+        return send(200, { text });
+      } catch (e) {
+        if (e instanceof VoiceError) return send(e.status, { error: e.message });
+        return fail(e);
+      }
+    }
 
     announceWebAccount(userId); // demo mode only: prints this account's id once so it can be set as the tester's profile
     const demo = demoConfig();
