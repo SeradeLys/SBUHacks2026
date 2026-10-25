@@ -214,7 +214,7 @@ async function listen(app: Awaited<ReturnType<typeof Spectrum>>, ask: (past: Con
     const text = message.content.text.trim();
     if (!text) continue;
     noteLine((space as { phone?: string }).phone);
-    console.log(`📱 iMessage received (${text.length} chars, ${(space as { type?: string }).type ?? "unknown"} chat, sender is ${normalizePhone(message.sender?.id) ? "a phone number" : (message.sender?.id ?? "").includes("@") ? "an email address" : "an unrecognised handle"})`);
+    console.log(`📱 iMessage received [pid ${process.pid}, id ${String(message.id ?? "unknown")}] (${text.length} chars, ${(space as { type?: string }).type ?? "unknown"} chat, sender is ${normalizePhone(message.sender?.id) ? "a phone number" : (message.sender?.id ?? "").includes("@") ? "an email address" : "an unrecognised handle"})`);
     logText?.(`💬 ${text}`);
     logText?.(`📱 sender handle (copy this into the Photon Users list and DEMO_TESTER_HANDLE): ${message.sender?.id ?? ""}`);
 
@@ -229,7 +229,7 @@ async function listen(app: Awaited<ReturnType<typeof Spectrum>>, ask: (past: Con
     const out = reply;
     try {
       await space.responding(async () => { await message.reply(out); });
-      console.log(`✉️ iMessage reply sent (${out.length} chars)`);
+      console.log(`✉️ iMessage reply sent [pid ${process.pid}, to id ${String(message.id ?? "unknown")}] (${out.length} chars)`);
     } catch (e) { // a failed send must not stop the agent from hearing the next text
       console.error("✉️ Couldn't send the iMessage reply:", e instanceof Error ? `${e.name}: ${e.message}` : e);
     }

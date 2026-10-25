@@ -8,6 +8,7 @@ import { join } from "node:path";
 import type { Content } from "@google/genai";
 
 process.env.WOLFIE_DATA_DIR = mkdtempSync(join(tmpdir(), "wolfie-test-"));
+for (const k of ["DEMO_MODE", "DEMO_TESTER_HANDLE", "DEMO_TESTER_USER_ID"]) delete process.env[k]; // bun loads .env; a real demo setup must not leak into these tests
 const { confirmLink, linkStatus, normalizePhone, resolveUser, senderScope, setClock, startLink, unlink, userIdFromKey, withUser } = await import("./accounts");
 const { handleImessage, imessageLine, noteLine, REPLIES } = await import("./channel");
 const { demoConfig, demoProof, handleKey } = await import("./demo");

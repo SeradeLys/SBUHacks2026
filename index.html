@@ -61,6 +61,28 @@ button,input,select,textarea{font:inherit;color:inherit}
 .logo img{width:100%;height:100%;object-fit:cover}
 .link-box{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:12px;background:var(--surface-2)}
 .link-code{font-family:var(--f-display);font-size:30px;font-weight:800;letter-spacing:.18em;color:var(--brand-text)}
+/* iMessage Sync card (Profile page) */
+.sync-card{display:flex;flex-direction:column;gap:14px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.sync-head{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.sync-ico{width:36px;height:36px;border-radius:10px;background:var(--brand-tint);color:var(--brand-text);display:grid;place-items:center;flex:none}
+.sync-ico svg{width:19px;height:19px}
+.sync-title{flex:1 1 200px;min-width:0}
+.sync-title h2{font-size:17px}
+.sync-title p{color:var(--muted);font-size:13px;margin-top:2px}
+.sync-status{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:99px;background:var(--surface-2);color:var(--muted);white-space:nowrap;margin-left:auto}
+.sync-status.ok{background:var(--ok-tint);color:var(--ok)} .sync-status.warn{background:var(--warn-tint);color:var(--warn)}
+.sync-body{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sync-num{display:flex;align-items:center;gap:4px;font-family:var(--f-display);font-size:20px;font-weight:700;letter-spacing:-.01em}
+.iconbtn.sync-pen{width:34px;height:34px;border-color:transparent;background:transparent;color:var(--muted)}
+.iconbtn.sync-pen:hover{background:var(--surface-2);color:var(--fg)}
+.sync-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sync-edit{flex:1 1 100%}
+.sync-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.sync-flow{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--fg);opacity:.55}
+.sync-flow span{padding:3px 9px;border-radius:99px;background:var(--surface-2)}
+.sync-flow svg{width:16px;height:16px;color:var(--muted)}
+.sync-card.live .sync-flow{opacity:1}
+.sync-card.live .sync-flow svg{color:var(--ok)}
 /* the mascot PNG has transparent margins, so it is enlarged slightly inside circular and rounded frames */
 img.mascot{transform:scale(1.3);transform-origin:50% 53%}
 .brand b{font-family:var(--f-display);font-size:18px;white-space:nowrap;font-weight:800;letter-spacing:-.02em}
@@ -787,6 +809,8 @@ const ICONS = {
   ext:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>',
   send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>',
   spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  sync:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 3 4 4-4 4"/><path d="M3 11V9a2 2 0 0 1 2-2h16"/><path d="m7 21-4-4 4-4"/><path d="M21 13v2a2 2 0 0 1-2 2H3"/></svg>',
   leaf:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>'
 };
 
@@ -1269,11 +1293,7 @@ VIEWS.profile = () => {
           <div class="field"><label for="pf-w">Weight</label><div class="unit-row"><input class="input ${e.weight?"bad":""}" id="pf-w" name="weight" type="number" step="0.1" inputmode="decimal" value="${esc(p.weight)}"><select class="input" name="weightUnit" aria-label="Weight unit"><option value="lb" ${p.weightUnit==="lb"?"selected":""}>lb</option><option value="kg" ${p.weightUnit==="kg"?"selected":""}>kg</option></select></div>${e.weight?`<span class="err">${esc(e.weight)}</span>`:""}</div>
           <div class="field"><label for="pf-h">Height</label><div class="unit-row"><input class="input ${e.height?"bad":""}" id="pf-h" name="height" type="number" step="0.1" inputmode="decimal" value="${esc(p.height)}"><select class="input" name="heightUnit" aria-label="Height unit"><option value="in" ${p.heightUnit==="in"?"selected":""}>in</option><option value="cm" ${p.heightUnit==="cm"?"selected":""}>cm</option></select></div>${e.height?`<span class="err">${esc(e.height)}</span>`:`<span class="hint">In inches: 5′5″ is 65 in.</span>`}</div>
         </div></section>
-      <section class="form-sec"><h2>iMessage <span class="small muted" style="font-family:var(--f-body);font-weight:500">optional</span></h2>
-        <div class="field"><label for="pf-phone">Phone Number (Optional)</label><input class="input ${e.phone?"bad":""}" id="pf-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+1 555 123 4567" value="${esc(p.phone)}">${e.phone?`<span class="err">${esc(e.phone)}</span>`:""}
-          <span class="hint">Include your country code. Entering a number here doesn't activate iMessage: it is only the number you'll text a link code from. Changing or removing it unlinks iMessage, and nobody else can see it.</span></div>
-        <div id="link-panel">${linkPanel()}</div>
-      </section>
+      <section class="form-sec"><div id="link-panel">${linkPanel()}</div></section>
       <section class="form-sec"><h2>Activity level</h2>
         <div class="act-grid" role="radiogroup" aria-label="Activity level">${Object.entries(CONFIG.activity).map(([k,a]) => `<label class="act-opt"><input type="radio" name="activity" value="${k}" ${p.activity===k?"checked":""}><span><b>${a.label}</b><span class="small muted">${a.desc}</span></span></label>`).join("")}</div></section>
       <section class="form-sec"><h2>Food preferences</h2>
@@ -1293,7 +1313,7 @@ VIEWS.profile = () => {
         <label style="display:flex;gap:10px;align-items:flex-start;font-size:14px"><input type="checkbox" name="rapidChange" ${p.rapidChange?"checked":""} style="margin-top:4px;accent-color:var(--brand)"> I've had an unexpected or rapid change in weight recently.</label>
         <div id="goal-check">${goalCheck(p)}</div>
       </section>
-      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit">Save and continue</button>${isNew?`<button class="btn ghost" type="button" data-act="skip-profile">Skip optional information</button>`:""}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit">Save profile</button>${isNew?`<button class="btn ghost" type="button" data-act="skip-profile">Skip optional information</button>`:""}</div>
     </form>
     <aside style="display:flex;flex-direction:column;gap:16px;position:sticky;top:24px" id="est-panel">${estimatePanel(p)}</aside>
   </div>
@@ -1436,7 +1456,7 @@ ${this.context()}`; },
       S.chat.push({ role:"assistant", content:data.reply, acts:[] }); speak(data.reply);
       if (data.profile && (data.profileUpdatedAt || "") > (S.profile?.updatedAt || "")) applyAgentProfile(data.profile, data.profileUpdatedAt);   // changed by this chat, or over iMessage
     } catch(e) {
-      if (e?.name !== "AbortError") S.chat.push({ role:"assistant", local:true, content: e?.message && !/fetch/i.test(e.message) ? e.message : "I can't reach the agent right now. Make sure it's running on the Mac, then try again." });
+      if (e?.name !== "AbortError") S.chat.push({ role:"assistant", local:true, content: e?.message && !/fetch/i.test(e.message) ? e.message : `I can't reach the agent at ${this.agentUrl}. Start it (open the photon folder and run: bun agent.ts), then try again.` });
     }
     S.chatBusy = false; paintMsgs(); paintComposer(); paintNavCounts();
   }
@@ -1508,37 +1528,60 @@ const AccountSync = {
     if (S.link?.code || S.link?.busy) return;
     try { const st = await this.call("/link/status"); S.link = st.demo ? { demo:st.demo } : st.linked ? { linked:true, last4:st.last4, linkedAt:st.linkedAt } : { line:st.line, available:st.available }; }
     catch { S.link = { unreachable:true }; }
-    paintLinkPanel();
+    paintLinkPanel(true);
   }
 };
 window.addEventListener("focus", () => { AccountSync.sync(); if (S.view === "profile") AccountSync.refreshLink(); });
 document.addEventListener("visibilitychange", () => { if (!document.hidden) AccountSync.sync(); });
 
+const fmtPhone = n => { const m = /^\+1(\d{3})(\d{3})(\d{4})$/.exec(n || ""); return m ? `+1 (${m[1]}) ${m[2]}-${m[3]}` : (n || ""); };   // display only; what is saved stays in +E.164
+function endPhoneEdit(){ S.phoneEdit = false; S.phoneDraft = undefined; S.phoneErr = ""; S.phoneSaving = false; }
+/* What the card says comes straight from the agent's answer (S.link), never from the saved number alone. */
+function syncState(L, saved){
+  if (L.demo) { const D = L.demo;
+    if (!D.ready) return { tone:"warn", label:"Setup needed", note:D.problem || "The assistant's demo settings are incomplete." };
+    if (!D.tester) return { tone:"idle", label:"Unavailable", note:`iMessage is reserved for the demo tester's profile, so linking is off for this account. This browser's profile is saved per address (${location.host}); to use the tester's profile, open the site at the same address you used when you set the tester up.` };
+    if (!D.connected) return { tone:"warn", label:"Offline", note:"iMessage isn't connected to the assistant right now." };
+    if (!D.verified) return { tone:"idle", label:"Ready", note:"Waiting for the demo tester's first text to confirm delivery." };
+    return { tone:"ok", label:"Connected" }; }
+  if (L.linked) return { tone:"ok", label:"Connected", linked:true };
+  if (L.code) return { tone:"warn", label:"Waiting for your text" };
+  if (L.unreachable) return { tone:"warn", label:"Unavailable", note:`The assistant isn't reachable at ${AgentService.agentUrl}, so linking is unavailable. Check that the agent is running.` };
+  if (L.available === false) return { tone:"idle", label:"Unavailable", note:"iMessage isn't switched on for this assistant yet, so it can't be linked." };
+  return { tone:"idle", label:"Not linked", canLink:true, note: saved ? "Saving a number doesn't turn on iMessage. Tap Link iMessage, then text the one-time code to the Wolfie Butler number from this phone." : "Add a phone number (optional), then link it to turn on iMessage." };
+}
 /* iMessage linking: the number in the profile only says WHICH number to expect. The student proves it is theirs by texting a
    one-time code from that number to the Wolfie Butler line. Saving a number alone never turns anything on. */
 function linkPanel(){
-  const L = S.link || {}, saved = normalizePhone(S.profile?.phone);
-  if (L.demo) {   // demo mode: the agent has one preconfigured tester, so this panel only reports the agent's own status
-    const D = L.demo, msg = !D.ready ? `<b>Demo mode: iMessage isn't set up.</b> ${esc(D.problem || "The agent's demo settings are incomplete.")}`
-      : !D.tester ? "<b>Demo mode.</b> iMessage is reserved for the demo tester's profile, so linking is turned off for this account."
-      : !D.connected ? "<b>Demo mode.</b> This profile is the demo tester's, but iMessage isn't connected to the assistant right now."
-      : !D.verified ? "<b>Demo ready.</b> The assistant is set up to answer the registered demo tester's iMessages using this profile. No text from the tester has arrived since the assistant started, so delivery isn't confirmed yet."
-      : `<b>iMessage connected.</b> A text from the demo tester arrived at ${esc(new Date(D.verifiedAt).toLocaleTimeString())} and was answered using this profile. Changes made here or over iMessage show up in both.`;
-    return `<div class="link-box"><p class="small">${msg}</p></div>`;
-  }
-  if (L.linked) return `<div class="link-box"><p class="small"><b>iMessage is linked</b> to the number ending ${esc(L.last4)}. Chats there use this profile, and changes made in either place show up in both.</p><div><button type="button" class="btn" data-act="link-unlink">Unlink iMessage</button></div></div>`;
-  if (L.code) return `<div class="link-box"><p class="small"><b>Send this code by text message</b> (it expires in 10 minutes and works once):</p><div class="link-code" aria-label="Link code">${esc(L.code)}</div><ol class="small" style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px"><li>On the phone with the number ending <b>${esc(L.last4)}</b>, open Messages.</li><li>Start a new message to <b>${esc(L.line)}</b>, the Wolfie Butler iMessage number.</li><li>Send the code as the whole message, with nothing else in it. It only works from your number ending ${esc(L.last4)}.</li></ol><p class="xs muted">This page isn't linked yet. It will say so once the assistant has received your text.</p></div>`;
-  const unavailable = L.unreachable ? "The assistant isn't reachable right now, so linking is unavailable." : L.available === false ? "iMessage isn't switched on for this assistant yet, so it can't be linked." : "";
-  return `<div class="link-box"><p class="small"><b>Not linked.</b> Saving a phone number doesn't turn on iMessage or send you anything. To link it, tap the button for a one-time code, then text that code to the Wolfie Butler iMessage number from the phone number saved here. Linking only completes when the assistant receives your text.</p>${L.error ? `<span class="err" role="alert">${esc(L.error)}</span>` : ""}${unavailable ? `<span class="hint">${unavailable}</span>` : ""}<div><button type="button" class="btn" data-act="link-start" ${saved && !L.busy && !unavailable ? "" : "disabled"}>${L.busy ? "Getting a code…" : "Link iMessage"}</button></div>${saved ? "" : `<span class="hint">Save a valid phone number first.</span>`}</div>`;
+  const L = S.link || {}, p = S.draft || S.profile || EMPTY_PROFILE, saved = normalizePhone(S.profile?.phone), st = syncState(L, saved);
+  const editing = !!S.phoneEdit || !!S.profileErrors.phone, err = S.phoneErr || S.profileErrors.phone, saving = !!S.phoneSaving;
+  const shown = saved ? fmtPhone(saved) : (L.linked && L.last4 ? `•••• ${esc(L.last4)}` : "");
+  const edit = `<div class="field sync-edit"><label for="pf-phone">Phone number</label><input class="input ${err?"bad":""}" id="pf-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+1 555 123 4567" value="${esc(S.phoneDraft ?? p.phone)}">${err?`<span class="err" role="alert">${esc(err)}</span>`:""}
+    <span class="hint">Include your country code. Only you can see this number.${L.linked ? " Changing or removing it unlinks iMessage." : ""}</span>
+    <div class="sync-actions"><button type="button" class="btn primary sm" data-act="phone-save" ${saving?"disabled":""}>${saving?"Saving…":"Save"}</button><button type="button" class="btn ghost sm" data-act="phone-cancel" ${saving?"disabled":""}>Cancel</button></div></div>`;
+  const action = L.demo ? "" : st.linked ? `<button type="button" class="btn sm" data-act="link-unlink">Unlink iMessage</button>`
+    : st.canLink && saved ? `<button type="button" class="btn primary sm" data-act="link-start" ${L.busy?"disabled":""}>${L.busy?"Getting a code…":"Link iMessage"}</button>` : "";
+  const view = `<input type="hidden" name="phone" value="${esc(p.phone)}">` + (shown
+    ? `<div><span class="xs muted">${L.linked ? "Linked phone number" : "Phone number"}</span><div class="sync-num num">${shown}<button type="button" class="iconbtn sync-pen" data-act="phone-edit" aria-label="Edit phone number" title="Edit phone number">${icon("edit")}</button></div></div>${action ? `<div class="sync-actions">${action}</div>` : ""}`
+    : `<div><span class="xs muted">Phone number</span><div class="small muted">None saved</div></div><div class="sync-actions"><button type="button" class="btn sm" data-act="phone-edit">Add number</button></div>`);
+  const code = L.code ? `<div class="link-box"><p class="small"><b>Send this code by text message</b> (it expires in 10 minutes and works once):</p><div class="link-code" aria-label="Link code">${esc(L.code)}</div><ol class="small" style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px"><li>On the phone with the number ending <b>${esc(L.last4)}</b>, open Messages.</li><li>Start a new message to <b>${esc(L.line)}</b>, the Wolfie Butler iMessage number.</li><li>Send the code as the whole message, with nothing else in it. It only works from your number ending ${esc(L.last4)}.</li></ol><p class="xs muted">This page isn't linked yet. It will say so once the assistant has received your text.</p></div>` : "";
+  return `<div class="sync-card ${st.tone==="ok"?"live":""}">
+    <div class="sync-head"><span class="sync-ico" aria-hidden="true">${icon("agent")}</span><div class="sync-title"><h2>iMessage Sync</h2><p>Keep your profile in sync across web and iMessage.</p></div>
+      <span class="sync-status ${st.tone}" role="status"><i class="dot ${st.tone==="ok"?"on":st.tone==="warn"?"warn":""}"></i>${esc(st.label)}</span></div>
+    ${editing ? edit : `<div class="sync-body">${view}</div>`}
+    ${st.note && !editing ? `<p class="small muted">${esc(st.note)}</p>` : ""}
+    ${L.error ? `<span class="err" role="alert">${esc(L.error)}</span>` : ""}${code}
+    <div class="sync-foot"><span class="sync-flow" aria-hidden="true"><span>Web profile</span>${icon("sync")}<span>iMessage</span></span>${st.tone==="ok" ? `<span>Changes to your profile are reflected on both web and iMessage.</span>` : ""}</div>
+  </div>`;
 }
-const paintLinkPanel = () => { const el = document.getElementById("link-panel"); if (el) el.innerHTML = linkPanel(); };
+const paintLinkPanel = soft => { const el = document.getElementById("link-panel"); if (el && !(soft && document.activeElement?.id === "pf-phone")) el.innerHTML = linkPanel(); };   // soft = a background refresh: it never rebuilds the card under the cursor while the number is being typed
 let linkTimer = 0;
 function watchLink(){   // waits for the student's text to arrive, then shows the result
   clearInterval(linkTimer);
   linkTimer = setInterval(async () => {
     if (!S.link?.code || !document.getElementById("link-panel")) return clearInterval(linkTimer);
     if (Date.parse(S.link.expiresAt) < Date.now()) { S.link = { error:"That code expired. Request a new one." }; paintLinkPanel(); return clearInterval(linkTimer); }
-    try { const st = await AccountSync.call("/link/status"); if (st.linked) { S.link = { linked:true, last4:st.last4, linkedAt:st.linkedAt }; clearInterval(linkTimer); paintLinkPanel(); toast("iMessage linked"); } } catch {}
+    try { const st = await AccountSync.call("/link/status"); if (st.linked) { S.link = { linked:true, last4:st.last4, linkedAt:st.linkedAt }; clearInterval(linkTimer); paintLinkPanel(true); toast("iMessage linked"); } } catch {}
   }, 3000);
 }
 function paintComposer(){ wbTouch(); const b = document.querySelector('[data-form="chat"] button[type="submit"]'); if (b) b.disabled = S.chatBusy; const pr = document.querySelector(".prompts"); if (pr && S.chat.length) pr.remove(); }
@@ -1802,6 +1845,13 @@ document.addEventListener("click", async e => {
       ps.forEach(p => (dp.picks[p] || []).forEach(x => { MealPlanService.add(S.plan, x.food, S.hall, S.date, x.servings, p); n += x.servings; }));
       if (!n) break; persistPlan(); render(); paintNavCounts(); toast(`Added ${n} dish${n>1?"es":""} · ${planCount()} selected`); break; }
     case "wb-open": openWidget(); setTimeout(() => document.getElementById("chat-in")?.focus(), 260); break;
+    case "phone-edit": { S.phoneEdit = true; S.phoneDraft = undefined; S.phoneErr = ""; paintLinkPanel(); const i = document.getElementById("pf-phone"); i?.focus(); i?.setSelectionRange?.(i.value.length, i.value.length); break; }
+    case "phone-cancel": { endPhoneEdit(); S.profileErrors = { ...S.profileErrors, phone:"" }; if (S.draft) S.draft = { ...S.draft, phone:S.profile?.phone || "" }; paintLinkPanel(); document.querySelector('#link-panel [data-act="phone-edit"]')?.focus(); break; }
+    case "phone-save": {   // saves through the profile form's own submit, so validation, unlinking a changed number and syncing stay exactly as before
+      const raw = (document.getElementById("pf-phone")?.value || "").trim();
+      if (raw && !normalizePhone(raw)) { S.phoneErr = "Enter your phone number with its country code, like +1 555 123 4567."; paintLinkPanel(); document.getElementById("pf-phone")?.focus(); break; }
+      S.phoneErr = ""; S.phoneDraft = raw; S.phoneSaving = true; paintLinkPanel();
+      document.getElementById("profile-form")?.requestSubmit(); break; }
     case "link-start": {
       const phone = normalizePhone(S.profile?.phone); if (!phone) break;
       S.link = { ...(S.link || {}), busy:true, error:"" }; paintLinkPanel();
@@ -1841,9 +1891,9 @@ document.addEventListener("click", async e => {
     case "prompt": AgentService.send(a.dataset.p); break;
     case "pf-chip": { S.draft = readProfileForm(); const g = a.dataset.group, v = a.dataset.v, arr = new Set(S.draft[g] || []); arr.has(v) ? arr.delete(v) : arr.add(v); S.draft[g] = [...arr]; a.setAttribute("aria-pressed", arr.has(v)); break; }
     case "pf-mode": { S.draft = readProfileForm(); S.draft.targetMode = a.dataset.v; document.querySelectorAll('[data-act="pf-mode"]').forEach(b => b.setAttribute("aria-pressed", b.dataset.v === a.dataset.v)); document.getElementById("custom-targets").hidden = a.dataset.v !== "custom"; document.getElementById("ct-note").hidden = a.dataset.v !== "custom"; refreshProfileSide(S.draft); break; }
-    case "skip-profile": { const p = readProfileForm(); S.profile = { ...p, phone: normalizePhone(p.phone) || "", updatedAt: new Date().toISOString() }; S.draft = null; await Store.savePrivate("profile", S.profile); AccountSync.push(); go("overview"); break; }
+    case "skip-profile": { const p = readProfileForm(); S.profile = { ...p, phone: normalizePhone(p.phone) || "", updatedAt: new Date().toISOString() }; S.draft = null; endPhoneEdit(); await Store.savePrivate("profile", S.profile); AccountSync.push(); go("overview"); break; }
     case "reset": S.confirm = "reset"; render(); break;
-    case "reset-yes": { S.profile = null; S.plan = { items:[] }; S.draft = null; S.confirm = null; S.chat = []; S.link = {}; AccountSync.deleteRemote();
+    case "reset-yes": { S.profile = null; S.plan = { items:[] }; S.draft = null; S.confirm = null; S.chat = []; S.link = {}; endPhoneEdit(); AccountSync.deleteRemote();
       try { if (Store.db && Store.uid) { await Store.db.doc(Store.userDoc("profile")).delete(); await Store.db.doc(Store.userDoc("mealplan")).delete(); } } catch {}
       try { localStorage.removeItem("np.profile"); localStorage.removeItem("np.mealplan"); } catch {}
       paintNav(); render(); toast("Your data was deleted"); break; }
@@ -1891,6 +1941,7 @@ document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === 
 document.addEventListener("input", e => {
   const t = e.target;
   if (t.id === "menu-q") { S.q = t.value; paintFoodGrid(); }
+  if (t.id === "pf-phone") { S.phoneDraft = t.value; if (S.phoneErr) { S.phoneErr = ""; t.classList.remove("bad"); t.parentElement.querySelector(".err")?.remove(); } }
   if (t.id === "recipe-q") { S.recipeQ = t.value; clearTimeout(t._d); t._d = setTimeout(() => { const pos = t.selectionStart; render(); const n = document.getElementById("recipe-q"); n.focus(); n.setSelectionRange(pos,pos); }, 250); }
   if (t.closest("#profile-form") && (t.type === "number" || t.type === "text")) { clearTimeout(t._d); t._d = setTimeout(() => { const p = { ...readProfileForm(), diet:S.draft?.diet ?? S.profile?.diet ?? [], allergies:S.draft?.allergies ?? S.profile?.allergies ?? [], targetMode:S.draft?.targetMode ?? S.profile?.targetMode ?? "estimated" }; S.draft = p; refreshProfileSide(p); }, 200); }
 });
@@ -1900,14 +1951,15 @@ document.addEventListener("submit", async e => {
   if (f.dataset.form === "profile") {
     const p = { ...readProfileForm(), diet:S.draft?.diet ?? S.profile?.diet ?? [], allergies:S.draft?.allergies ?? S.profile?.allergies ?? [], targetMode:S.draft?.targetMode ?? S.profile?.targetMode ?? "estimated" };
     const v = NutritionService.validate(p); S.profileErrors = v.errors;
-    if (!v.ok) { S.draft = p; render(); document.querySelector(".input.bad")?.focus(); return; }
+    if (!v.ok) { S.draft = p; S.phoneSaving = false; render(); document.querySelector(".input.bad")?.focus(); return; }
     const prevPhone = S.profile?.phone || "";
     p.phone = normalizePhone(p.phone) || ""; p.updatedAt = new Date().toISOString();   // saved in one standard format; the timestamp lets the agent keep the newer copy
     S.profile = p; S.draft = null;
     try { await Store.savePrivate("profile", p); toast("Profile saved"); } catch { toast("Couldn't save to the cloud. It's kept on this device."); }
     if (prevPhone && prevPhone !== p.phone) { S.link = {}; AccountSync.call("/link/remove", { method:"POST" }).then(() => toast("Phone number changed, so iMessage was unlinked. Link it again to use the new number."), () => toast("Couldn't unlink the old number just now. Open your profile to check iMessage.")); }   // a changed or cleared number must not stay linked
     AccountSync.push();
-    go("overview");
+    endPhoneEdit();
+    paintNav(); render();   // stay on this page: show the saved values (and, after the first save, the normal "Profile & targets" heading)
   }
   if (f.dataset.form === "recipe") {
     const fd = new FormData(f), title = (fd.get("title")||"").trim(), err = document.getElementById("rc-err");
