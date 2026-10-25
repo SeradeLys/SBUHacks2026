@@ -1,0 +1,17 @@
+# secrets: never commit these
+.env
+.env.*
+!.env.example
+
+# dependencies
+node_modules
+
+# build output and logs
+dist
+out
+*.log
+
+# editor and OS files
+.idea
+.DS_Store
+Thumbs.db

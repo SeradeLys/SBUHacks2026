@@ -3,13 +3,18 @@ import { setTimeout as sleep } from "node:timers/promises";
 import { TOOLS, runTool, systemPrompt } from "./meal-tools";
 import { ApiError, Photon } from "@photon-ai/api";
 import { GoogleGenAI, Type, type Content, type FunctionDeclaration, type Part } from "@google/genai";
+import { Spectrum } from "spectrum-ts";
+import { imessage } from "spectrum-ts/providers/imessage";
 
 
 // ---------- Settings ----------
 type Config = {
   key: string; project: string; platform: "imessage" | "email";
   agent: string; sender: string; gemini: string; model: string;
+  webOnly: boolean; // true when the Photon settings are incomplete: only the website chat runs
 };
+
+const PHOTON_VARS = ["PHOTON_API", "PHOTON_PROJECT_ID", "PHOTON_PLATFORM", "PHOTON_AGENT_HANDLE", "PHOTON_TEST_SENDER"];
 
 function configuration(): Config {
   const required = (name: string) => {
@@ -17,12 +22,18 @@ function configuration(): Config {
     if (!value) throw new Error(`Missing ${name}.`);
     return value;
   };
+  const gemini = required("GEMINI_API"), model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+  const missing = PHOTON_VARS.filter((name) => !process.env[name]);
+  if (missing.length) {
+    if (!spectrumReady()) console.log(`ℹ️ Photon is not set up (missing ${missing.join(", ")}), so only the website chat will run.`);
+    return { key: "", project: "", platform: "imessage", agent: "", sender: "", gemini, model, webOnly: true };
+  }
   const platform = required("PHOTON_PLATFORM");
   if (platform !== "imessage" && platform !== "email") throw new Error("PHOTON_PLATFORM must be imessage or email.");
   return {
-    key: required("PHOTON_API_KEY"), project: required("PHOTON_PROJECT_ID"),
+    key: required("PHOTON_API"), project: required("PHOTON_PROJECT_ID"),
     platform, agent: required("PHOTON_AGENT_HANDLE"), sender: required("PHOTON_TEST_SENDER"),
-    gemini: required("GEMINI_API_KEY"), model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
+    gemini, model, webOnly: false,
   };
 }
 
@@ -224,6 +235,40 @@ function startWebChat(ask: (past: Content[], text: string) => Promise<string>) {
   server.listen(port, () => console.log(`🌐 Web chat for Wolfie Butler: http://localhost:${port}/chat (allowed: ${origins.join(", ")})`));
 }
 
+// ---------- iMessage through Spectrum (needs only SPECTRUM_PROJECT_ID and SPECTRUM_PROJECT_SECRET) ----------
+const spectrumReady = () => Boolean(process.env.SPECTRUM_PROJECT_ID && process.env.SPECTRUM_PROJECT_SECRET);
+
+async function startSpectrum(ask: (past: Content[], text: string) => Promise<string>) {
+  const app = await Spectrum({
+    projectId: process.env.SPECTRUM_PROJECT_ID!,
+    projectSecret: process.env.SPECTRUM_PROJECT_SECRET!,
+    providers: [imessage.config()],
+  });
+  console.log(`📱 Spectrum connected to "${app.config?.name ?? "your project"}". Text the project's iMessage line to chat.`);
+  const memory = new Map<string, Content[]>(); // one history per conversation
+
+  for await (const [space, message] of app.messages) {
+    if (message.content.type !== "text") continue;
+    const text = message.content.text.trim();
+    if (!text) continue;
+    console.log(`\n💬 ${text}`);
+
+    const past = memory.get(space.id) ?? [];
+    let reply: string;
+    try {
+      reply = await ask(past, text);
+    } catch (e) {
+      console.error("Gemini error:", e instanceof Error ? e.message : e);
+      reply = "Sorry, my brain glitched for a second. Try again in a moment?";
+    }
+    past.push({ role: "user", parts: [{ text }] }, { role: "model", parts: [{ text: reply }] });
+    memory.set(space.id, past.slice(-MAX_HISTORY));
+
+    await space.responding(async () => { await message.reply(reply); });
+    console.log(`🤖 ${reply}`);
+  }
+}
+
 // ---------- Main loop: keeps running until Ctrl+C ----------
 async function run(c: Config, pollMs = 2_000) {
   const photon = new Photon({ headers: { Authorization: `Bearer ${c.key}` } });
@@ -233,8 +278,10 @@ async function run(c: Config, pollMs = 2_000) {
   const seen = new Set<string>();
   const memory = new Map<string, Content[]>(); // one history per conversation
 
-  console.log(`Ready. Agent is live with ${c.model}. Text ${c.agent} from ${c.sender}. Ctrl+C to stop.`);
+  console.log(spectrumReady() ? `Ready. Website chat and iMessage (Spectrum), with ${c.model}. Ctrl+C to stop.` : c.webOnly ? `Ready. Website chat only, with ${c.model}. Ctrl+C to stop.` : `Ready. Agent is live with ${c.model}. Text ${c.agent} from ${c.sender}. Ctrl+C to stop.`);
   startWebChat((past, text) => oneAtATime(() => think(ai, c.model, past, text)));
+  if (spectrumReady()) return startSpectrum((past, text) => oneAtATime(() => think(ai, c.model, past, text)));
+  if (c.webOnly) return; // the web chat server keeps the process running
   await greetFirst(photon, c, memory, (prompt) => oneAtATime(() => think(ai, c.model, [], prompt)));
 
   while (true) {

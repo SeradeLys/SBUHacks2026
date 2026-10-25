@@ -1203,7 +1203,7 @@ function paintWidget(){
   const canSpeak = "speechSynthesis" in window;
   const anim = S.wbAnim; S.wbAnim = false;
   w.innerHTML = `<section class="wb-panel ${anim?"opening":""}" role="dialog" aria-label="Wolfie Butler chat">
-    <div class="wb-head"><span class="face">${mascot()}</span><div class="who"><b>Wolfie Butler</b><div class="xs muted">Web chat on Claude · iMessage via Photon</div></div>
+    <div class="wb-head"><span class="face">${mascot()}</span><div class="who"><b>Wolfie Butler</b><div class="xs muted">Web chat on Gemini · iMessage via Photon</div></div>
       <button class="iconbtn" data-act="copy-brief" title="Copy brief for your Photon iMessage agent" aria-label="Copy brief for your Photon iMessage agent">${icon("copy")}</button>
       ${Store.assets ? `<label class="iconbtn" title="Change icon" aria-label="Change chatbot icon" data-act="noop" style="cursor:pointer">${icon("upload")}<input type="file" accept="image/png,image/jpeg,image/webp" data-upload="mascot" hidden></label>` : ""}
       <button class="iconbtn" data-act="wb-close" aria-label="Minimize chat">${icon("minus")}</button></div>
